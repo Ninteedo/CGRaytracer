@@ -4,7 +4,7 @@
 
 class Vector3D {
 private:
-    double x, y, z;
+    const double x, y, z;
 
 public:
     // Default constructor
@@ -26,12 +26,6 @@ public:
     double getZ() const;
 
     double operator[](int i) const;
-
-    // Setter methods
-    void setX(double val);
-    void setY(double val);
-    void setZ(double val);
-
 
     // Addition
     Vector3D operator+(const Vector3D& v) const;
@@ -58,7 +52,7 @@ public:
     double magnitude() const;
 
     // Normalize the vector
-    void normalize();
+    Vector3D normalize() const;
 
     // Print vector
     void print() const;

@@ -23,10 +23,6 @@ double Vector3D::operator[](int i) const {
     }
 }
 
-void Vector3D::setX(double val) { x = val; }
-void Vector3D::setY(double val) { y = val; }
-void Vector3D::setZ(double val) { z = val; }
-
 Vector3D Vector3D::operator+(const Vector3D& v) const {
     return Vector3D(x + v.x, y + v.y, z + v.z);
 }
@@ -61,13 +57,9 @@ double Vector3D::magnitude() const {
     return sqrt(x * x + y * y + z * z);
 }
 
-void Vector3D::normalize() {
-    double mag = magnitude();
-    if (mag > 0) {
-        x /= mag;
-        y /= mag;
-        z /= mag;
-    }
+Vector3D Vector3D::normalize() const {
+    const double mag = magnitude();
+    return Vector3D(x / mag, y / mag, z / mag);
 }
 
 void Vector3D::print() const {
