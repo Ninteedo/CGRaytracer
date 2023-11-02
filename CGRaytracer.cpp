@@ -28,8 +28,8 @@ int main()
             if (x > width / 2 && y > height / 2) {
                 b = 1.0f - r - g;
             }
-
-            img.setColor(x, y, Image::Color(r, g, b));
+            
+            img.setColor(x, y, Colour(r, g, b));
         }
     }
 

@@ -2,23 +2,16 @@
 #define IMAGE_H
 
 #include <string>
+#include "Colour.h"
 
 class Image {
 public:
-    struct Color {
-        float red;
-        float green;
-        float blue;
-        float alpha;
-
-        Color(float r = 0, float g = 0, float b = 0, float a = 1);
-    };
 
     Image(unsigned int width, unsigned int height);
     ~Image();
 
-    Color getColor(unsigned int x, unsigned int y) const;
-    void setColor(unsigned int x, unsigned int y, const Color& color);
+    Colour getColor(unsigned int x, unsigned int y) const;
+    void setColor(unsigned int x, unsigned int y, const Colour& colour);
 
     unsigned int getWidth() const;
     unsigned int getHeight() const;
@@ -28,7 +21,7 @@ public:
 private:
     unsigned int width;
     unsigned int height;
-    Color* pixels;
+    Colour* pixels;
 
     bool isInside(unsigned int x, unsigned int y) const;
 };
