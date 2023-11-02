@@ -17,7 +17,11 @@ add_executable (CGRaytracer "CGRaytracer.cpp" "CGRaytracer.h" "Vector3D.cpp" "Ve
         Object.h
         LightSource.h
         Material.h
-        Camera.h)
+        Camera.h
+        Sphere.h
+        Cylinder.h
+        Triangle.h
+        Cuboid.h)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CGRaytracer PROPERTY CXX_STANDARD 20)

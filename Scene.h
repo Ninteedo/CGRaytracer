@@ -5,14 +5,16 @@
 #include "Colour.h"
 #include "Object.h"
 #include "LightSource.h"
+#include "Camera.h"
 
 class Scene {
 private:
     Colour colour;
+    Camera camera;
     std::vector<Object> objects;
     std::vector<LightSource> lightSources;
 public:
-    Scene(Colour colour, std::vector<Object> objects, std::vector<LightSource> lightSources);
+    Scene(Colour colour, Camera camera, std::vector<Object> objects, std::vector<LightSource> lightSources);
     Scene(JsonObject sceneJson);
     ~Scene();
 };
