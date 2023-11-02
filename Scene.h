@@ -6,6 +6,13 @@
 #include "Object.h"
 #include "LightSource.h"
 #include "Camera.h"
+#include "Image.h"
+
+enum RenderMode {
+    BINARY,
+    PHONG,
+    PATHTRACER,
+};
 
 class Scene {
 private:
@@ -13,10 +20,14 @@ private:
     Camera camera;
     std::vector<Object> objects;
     std::vector<LightSource> lightSources;
+    int nBounces;
+    RenderMode renderMode;
 public:
-    Scene(Colour colour, Camera camera, std::vector<Object> objects, std::vector<LightSource> lightSources);
+    Scene(Colour colour, Camera camera, std::vector<Object> objects, std::vector<LightSource> lightSources, int nBounces, RenderMode renderMode);
     Scene(JsonObject sceneJson);
     ~Scene();
+
+    Image render();
 };
 
 #endif //CGRAYTRACER_SCENE_H
