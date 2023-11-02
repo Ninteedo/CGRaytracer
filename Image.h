@@ -1,7 +1,10 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <memory>
 #include <string>
+#include <vector>
+
 #include "Colour.h"
 
 class Image {
@@ -21,7 +24,7 @@ public:
 private:
     unsigned int width;
     unsigned int height;
-    Colour* pixels;
+    std::vector<std::shared_ptr<Colour>> pixels;
 
     bool isInside(unsigned int x, unsigned int y) const;
 };

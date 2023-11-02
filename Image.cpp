@@ -5,24 +5,25 @@
 #include <sstream>
 
 Image::Image(unsigned int width, unsigned int height)
-    : width(width), height(height), pixels(new Colour[width * height]) {}
-
-Image::~Image() {
-    delete[] pixels;
+    : width(width), height(height)
+{
+	pixels.resize(width * height);
 }
+
+Image::~Image() = default;
 
 Colour Image::getColor(unsigned int x, unsigned int y) const {
     if (!isInside(x, y)) {
         throw std::out_of_range("Coordinates are out of range");
     }
-    return pixels[y * width + x];
+    return *pixels[y * width + x];
 }
 
 void Image::setColor(unsigned int x, unsigned int y, const Colour& colour) {
     if (!isInside(x, y)) {
         throw std::out_of_range("Coordinates are out of range");
     }
-    pixels[y * width + x] = colour;
+    pixels[y * width + x] = std::make_shared<Colour>(colour);
 }
 
 unsigned int Image::getWidth() const {
