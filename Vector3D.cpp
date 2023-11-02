@@ -14,6 +14,15 @@ double Vector3D::getX() const { return x; }
 double Vector3D::getY() const { return y; }
 double Vector3D::getZ() const { return z; }
 
+double Vector3D::operator[](int i) const {
+    switch (i) {
+	    case 0: return x;
+	    case 1: return y;
+	    case 2: return z;
+	    default: throw std::out_of_range("Index out of bounds");
+    }
+}
+
 void Vector3D::setX(double val) { x = val; }
 void Vector3D::setY(double val) { y = val; }
 void Vector3D::setZ(double val) { z = val; }
@@ -25,6 +34,20 @@ Vector3D Vector3D::operator+(const Vector3D& v) const {
 Vector3D Vector3D::operator-(const Vector3D& v) const {
     return Vector3D(x - v.x, y - v.y, z - v.z);
 }
+
+Vector3D Vector3D::operator-() const
+{
+	return Vector3D(-x, -y, -z);
+}
+
+Vector3D Vector3D::operator*(double val) const {
+	return Vector3D(x * val, y * val, z * val);
+}
+
+Vector3D Vector3D::operator/(double val) const {
+	return Vector3D(x / val, y / val, z / val);
+}
+
 
 double Vector3D::dot(const Vector3D& v) const {
     return x * v.x + y * v.y + z * v.z;
