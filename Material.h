@@ -1,0 +1,8 @@
+#ifndef CGRAYTRACER_MATERIAL_H
+#define CGRAYTRACER_MATERIAL_H
+
+class Material {
+
+};
+
+#endif //CGRAYTRACER_MATERIAL_H

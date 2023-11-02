@@ -35,6 +35,6 @@
 
 ## Input-Output
 
-- [ ] JSON parsing
+- [x] JSON parsing
 - [ ] Scene loading
 - [ ] Image output

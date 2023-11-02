@@ -12,7 +12,12 @@ endif()
 project ("CGRaytracer")
 
 # Add source to this project's executable.
-add_executable (CGRaytracer "CGRaytracer.cpp" "CGRaytracer.h" "Vector3D.cpp" "Vector3D.h" "Image.h" "Image.cpp" "Colour.cpp" "Colour.h" "Ray.h" "Ray.cpp" "JSONParser.h" "JSONParser.cpp" "test/json_parser_test.cpp")
+add_executable (CGRaytracer "CGRaytracer.cpp" "CGRaytracer.h" "Vector3D.cpp" "Vector3D.h" "Image.h" "Image.cpp" "Colour.cpp" "Colour.h" "Ray.h" "Ray.cpp" "JSONParser.h" "JSONParser.cpp" "test/json_parser_test.cpp"
+        Scene.h
+        Object.h
+        LightSource.h
+        Material.h
+        Camera.h)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CGRaytracer PROPERTY CXX_STANDARD 20)
