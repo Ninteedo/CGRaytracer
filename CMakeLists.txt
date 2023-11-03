@@ -14,20 +14,20 @@ project ("CGRaytracer")
 # Add source to this project's executable.
 add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vector3D.cpp" "src/Vector3D.h" "src/Image.h" "src/Image.cpp" "src/Colour.cpp" "src/Colour.h" "src/Ray.h" "src/Ray.cpp" "src/JSONParser.h" "src/JSONParser.cpp" "test/json_parser_test.cpp"
         src/Scene.h
-        src/Shape.h
+        src/shapes/Shape.h
         src/LightSource.h
         src/Material.h
         src/Camera.h
-        src/Sphere.h
-        src/Cylinder.h
-        src/Triangle.h
-        src/Cuboid.h
+        src/shapes/Sphere.h
+        src/shapes/Cylinder.h
+        src/shapes/Triangle.h
+        src/shapes/Cuboid.h
         src/PointLight.h
-        src/Sphere.cpp
-        src/Shape.cpp
+        src/shapes/Sphere.cpp
+        src/shapes/Shape.cpp
         src/Material.cpp
         src/Scene.cpp
-        src/Cuboid.cpp
+        src/shapes/Cuboid.cpp
         src/LightSource.cpp
         src/PointLight.cpp
         src/Camera.cpp

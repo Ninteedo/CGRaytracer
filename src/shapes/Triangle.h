@@ -2,7 +2,7 @@
 #define CGRAYTRACER_TRIANGLE_H
 
 #include "Shape.h"
-#include "Vector3D.h"
+#include "../Vector3D.h"
 
 class Triangle : public Shape {
  private:

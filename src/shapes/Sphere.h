@@ -1,7 +1,7 @@
 #ifndef CGRAYTRACER_SPHERE_H
 #define CGRAYTRACER_SPHERE_H
 
-#include "Vector3D.h"
+#include "../Vector3D.h"
 #include "Shape.h"
 
 class Sphere : public Shape {

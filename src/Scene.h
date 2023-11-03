@@ -3,7 +3,7 @@
 
 #include "JSONParser.h"
 #include "Colour.h"
-#include "Shape.h"
+#include "shapes/Shape.h"
 #include "LightSource.h"
 #include "Camera.h"
 #include "Image.h"

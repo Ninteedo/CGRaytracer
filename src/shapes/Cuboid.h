@@ -2,7 +2,7 @@
 #define CGRAYTRACER_CUBOID_H
 
 #include "Shape.h"
-#include "Vector3D.h"
+#include "../Vector3D.h"
 
 class Cuboid : public Shape {
  private:

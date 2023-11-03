@@ -1,8 +1,8 @@
 #ifndef CGRAYTRACER_OBJECT_H
 #define CGRAYTRACER_OBJECT_H
 
-#include "Material.h"
-#include "Ray.h"
+#include "../Material.h"
+#include "../Ray.h"
 #include <memory>
 
 class Shape {
