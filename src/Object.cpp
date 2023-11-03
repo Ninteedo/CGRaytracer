@@ -1,3 +1,22 @@
 #include "Object.h"
+#include "Cuboid.h"
+#include "Cylinder.h"
+#include "Sphere.h"
+#include "Triangle.h"
 
 Object::Object(const Material material) : material(material) {}
+
+std::unique_ptr<Object> Object::fromJson(JsonObject json) {
+  std::string type = json["type"].asString();
+  if (type == "sphere") {
+    return std::make_unique<Sphere>(json);
+  } else if (type == "cuboid") {
+    return std::make_unique<Cuboid>(json);
+  } else if (type == "triangle") {
+    return std::make_unique<Triangle>(json);
+  } else if (type == "cylinder") {
+    return std::make_unique<Cylinder>(json);
+  } else {
+    throw std::runtime_error("Unknown object type: " + type);
+  }
+}

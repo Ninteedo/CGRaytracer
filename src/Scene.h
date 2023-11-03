@@ -9,25 +9,30 @@
 #include "Image.h"
 
 enum RenderMode {
-    BINARY,
-    PHONG,
-    PATHTRACER,
+  BINARY,
+  PHONG,
+  PATHTRACER,
 };
 
 class Scene {
-private:
-    Colour colour;
-    Camera camera;
-    std::vector<Object> objects;
-    std::vector<LightSource> lightSources;
-    int nBounces;
-    RenderMode renderMode;
-public:
-    Scene(Colour colour, Camera camera, std::vector<Object> objects, std::vector<LightSource> lightSources, int nBounces, RenderMode renderMode);
-    Scene(JsonObject sceneJson);
-    ~Scene();
+ private:
+  Colour colour;
+  Camera camera;
+  std::vector<Object> objects;
+  std::vector<LightSource> lightSources;
+  int nBounces;
+  RenderMode renderMode;
+ public:
+  Scene(Colour colour,
+        Camera camera,
+        std::vector<Object> objects,
+        std::vector<LightSource> lightSources,
+        int nBounces,
+        RenderMode renderMode);
+  Scene(JsonObject sceneJson);
+  ~Scene();
 
-    Image render();
+  Image render();
 };
 
 #endif //CGRAYTRACER_SCENE_H

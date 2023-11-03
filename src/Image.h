@@ -8,25 +8,25 @@
 #include "Colour.h"
 
 class Image {
-public:
+ public:
 
-    Image(unsigned int width, unsigned int height);
-    ~Image();
+  Image(unsigned int width, unsigned int height);
+  ~Image();
 
-    Colour getColor(unsigned int x, unsigned int y) const;
-    void setColor(unsigned int x, unsigned int y, const Colour& colour);
+  Colour getColor(unsigned int x, unsigned int y) const;
+  void setColor(unsigned int x, unsigned int y, const Colour &colour);
 
-    unsigned int getWidth() const;
-    unsigned int getHeight() const;
+  unsigned int getWidth() const;
+  unsigned int getHeight() const;
 
-    void saveToPPM(const std::string& filename) const;
+  void saveToPPM(const std::string &filename) const;
 
-private:
-    unsigned int width;
-    unsigned int height;
-    std::vector<std::shared_ptr<Colour>> pixels;
+ private:
+  unsigned int width;
+  unsigned int height;
+  std::vector<std::shared_ptr<Colour>> pixels;
 
-    bool isInside(unsigned int x, unsigned int y) const;
+  bool isInside(unsigned int x, unsigned int y) const;
 };
 
 #endif // IMAGE_H

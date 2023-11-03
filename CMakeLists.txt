@@ -25,7 +25,11 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/PointLight.h
         src/Sphere.cpp
         src/Object.cpp
-        src/Material.cpp)
+        src/Material.cpp
+        src/Scene.cpp
+        src/Cuboid.cpp
+        src/LightSource.cpp
+        src/PointLight.cpp)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CGRaytracer PROPERTY CXX_STANDARD 20)
