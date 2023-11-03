@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CGRAYTRACER_LIGHTSOURCE_H
 #define CGRAYTRACER_LIGHTSOURCE_H
 

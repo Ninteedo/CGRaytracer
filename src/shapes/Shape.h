@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CGRAYTRACER_OBJECT_H
 #define CGRAYTRACER_OBJECT_H
 

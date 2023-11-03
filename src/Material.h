@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CGRAYTRACER_MATERIAL_H
 #define CGRAYTRACER_MATERIAL_H
 

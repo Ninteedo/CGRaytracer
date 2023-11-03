@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CGRAYTRACER_CUBOID_H
 #define CGRAYTRACER_CUBOID_H
 

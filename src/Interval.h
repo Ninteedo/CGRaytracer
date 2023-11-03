@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CGRAYTRACER_SRC_INTERVAL_H_
 #define CGRAYTRACER_SRC_INTERVAL_H_
 

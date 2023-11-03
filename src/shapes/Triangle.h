@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CGRAYTRACER_TRIANGLE_H
 #define CGRAYTRACER_TRIANGLE_H
 

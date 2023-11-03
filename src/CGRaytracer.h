@@ -1,4 +1,5 @@
-﻿// CGRaytracer.h : Include file for standard system include files,
+﻿#pragma once
+// CGRaytracer.h : Include file for standard system include files,
 // or project specific include files.
 
 #pragma once

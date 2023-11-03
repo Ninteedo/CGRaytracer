@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CGRAYTRACER_CYLINDER_H
 #define CGRAYTRACER_CYLINDER_H
 
