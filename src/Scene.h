@@ -35,6 +35,21 @@ class Scene {
   static Scene loadFromFile(const std::string& filename);
 
   Image render();
+  Image renderBinary();
+
+  struct Intersection {
+    bool hit;
+    double t;
+  };
+
+  Intersection checkIntersection(Ray ray, double t) const {
+    for (int i = 0; i < objects.size(); i++) {
+      if (objects[i]->checkIntersection(ray, t)) {
+        return {true, t};
+      }
+    }
+    return {false, t};
+  }
 };
 
 #endif //CGRAYTRACER_SCENE_H

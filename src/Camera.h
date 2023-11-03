@@ -4,6 +4,7 @@
 #include <memory>
 #include "Vector3D.h"
 #include "JSONParser.h"
+#include "Ray.h"
 
 class Camera {
  private:
@@ -27,6 +28,18 @@ class Camera {
   ~Camera();
 
   std::unique_ptr<Camera> fromJson(JsonObject json);
+
+  // Getters
+
+  Vector3D getPosition() const;
+  Vector3D getLookAt() const;
+  Vector3D getUpVector() const;
+  double getFieldOfView() const;
+  double getExposure() const;
+  int getWidth() const;
+  int getHeight() const;
+
+  Ray getRay(double x, double y) const;
 };
 
 #endif //CGRAYTRACER_CAMERA_H

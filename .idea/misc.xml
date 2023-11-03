@@ -8,6 +8,7 @@
     <excludeRoots>
       <file path="$PROJECT_DIR$/.vs" />
       <file path="$PROJECT_DIR$/out" />
+      <file path="$PROJECT_DIR$/output" />
     </excludeRoots>
   </component>
 </project>

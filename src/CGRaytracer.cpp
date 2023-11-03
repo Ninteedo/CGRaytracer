@@ -52,5 +52,6 @@ int main() {
 
   Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
 
-  cout << "Loaded scene from " << sceneFilename << endl;
+  Image rendered = scene.render();
+  rendered.saveToPPM("../output/" + sceneFilename + ".ppm");
 }
