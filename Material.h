@@ -6,19 +6,19 @@
 
 class Material {
 private:
-    double ks;
-    double kd;
-    int specularExponent;
-    Colour diffuseColour;
-    Colour specularColour;
-    bool isReflective;
-    double reflectivity;
-    bool isRefractive;
-    double refractiveIndex;
+    const double ks;
+    const double kd;
+    const int specularExponent;
+    const Colour diffuseColour;
+    const Colour specularColour;
+    const bool isReflective;
+    const double reflectivity;
+    const bool isRefractive;
+    const double refractiveIndex;
 
 public:
     Material(double ks, double kd, int specularExponent, Colour diffuseColour, Colour specularColour, bool isReflective, double reflectivity, bool isRefractive, double refractiveIndex);
-    Material(JsonObject materialJson);
+    explicit Material(JsonObject materialJson);
     ~Material();
 };
 

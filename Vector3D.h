@@ -2,6 +2,8 @@
 #ifndef VECTOR3D_H
 #define VECTOR3D_H
 
+#include "JSONParser.h"
+
 class Vector3D {
 private:
     const double x, y, z;
@@ -15,6 +17,8 @@ public:
 
     // Copy constructor
     Vector3D(const Vector3D& v);
+
+    explicit Vector3D(JsonArray json);
 
     // Destructor
     ~Vector3D();

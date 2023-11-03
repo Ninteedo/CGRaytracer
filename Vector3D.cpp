@@ -8,6 +8,8 @@ Vector3D::Vector3D(double x, double y, double z) : x(x), y(y), z(z) {}
 
 Vector3D::Vector3D(const Vector3D& v) : x(v.x), y(v.y), z(v.z) {}
 
+Vector3D::Vector3D(JsonArray json): x(json[0].asDouble()), y(json[1].asDouble()), z(json[2].asDouble()) {}
+
 Vector3D::~Vector3D() {}
 
 double Vector3D::getX() const { return x; }
