@@ -47,8 +47,7 @@ using namespace std;
 // }
 
 int main() {
-  // Load the scene from the JSON file
-  std::string sceneFilename = "sphere_binary_scene.json";
+  std::string sceneFilename = "scene.json";
 
   Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
 

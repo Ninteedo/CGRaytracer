@@ -10,12 +10,12 @@ std::unique_ptr<Shape> Shape::fromJson(JsonObject json) {
   std::string type = json["type"].asString();
   if (type == "sphere") {
     return std::make_unique<Sphere>(json);
+  } else if (type == "triangle") {
+    return std::make_unique<Triangle>(json);
+  } else if (type == "cylinder") {
+    return std::make_unique<Cylinder>(json);
 //  } else if (type == "cuboid") {
 //    return std::make_unique<Cuboid>(json);
-//  } else if (type == "triangle") {
-//    return std::make_unique<Triangle>(json);
-//  } else if (type == "cylinder") {
-//    return std::make_unique<Cylinder>(json);
   } else {
     throw std::runtime_error("Unknown object type: " + type);
   }
