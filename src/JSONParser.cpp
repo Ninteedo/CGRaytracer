@@ -152,15 +152,22 @@ JsonObject JsonParser::parseObject() {
 JsonArray JsonParser::parseArray() {
   JsonArray arr;
   skipWhitespace();
+
+  // A list starts with '['
   if (nextChar() != '[') {
     throw JsonParseError(json, pos, "Expected '['");
   }
+  skipWhitespace();
 
-  do {
-    arr.push_back(parseValue());
-    skipWhitespace();
-  } while (match(","));
+  // Checking the next character. If it's not ']', we start parsing the list
+  if(peekChar() != ']'){
+    do {
+      arr.push_back(parseValue());
+      skipWhitespace();
+    } while (match(","));
+  }
 
+  // A list ends with ']'
   if (nextChar() != ']') {
     throw JsonParseError(json, pos, "Expected ']'");
   }
