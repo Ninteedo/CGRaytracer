@@ -12,14 +12,16 @@ Material::Material(double ks, double kd, int specularExponent,
       isRefractive(isRefractive), refractiveIndex(refractiveIndex) {}
 
 Material::Material(JsonObject materialJson)
-    : ks(materialJson["ks"].asDouble()), kd(materialJson["kd"].asDouble()),
-      specularExponent(materialJson["specularexponent"].asInt()),
-      diffuseColour(Colour(materialJson["diffusecolor"].asArray())),
-      specularColour(Colour(materialJson["specularcolor"].asArray())),
-      isReflective(materialJson["isreflective"].asBool()),
-      reflectivity(materialJson["reflectivity"].asDouble()),
-      isRefractive(materialJson["isrefractive"].asBool()),
-      refractiveIndex(materialJson["refractiveindex"].asDouble()) {}
+    : Material(
+    materialJson["ks"].asDouble(),
+    materialJson["kd"].asDouble(),
+    materialJson["specularexponent"].asInt(),
+    Colour(materialJson["diffusecolor"].asArray()),
+    Colour(materialJson["specularcolor"].asArray()),
+    materialJson["isreflective"].asBool(),
+    materialJson["reflectivity"].asDouble(),
+    materialJson["isrefractive"].asBool(),
+    materialJson["refractiveindex"].asDouble()) {}
 
 Material::~Material() = default;
 

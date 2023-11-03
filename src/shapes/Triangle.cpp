@@ -1,13 +1,15 @@
 #include "Triangle.h"
 
-Triangle::Triangle(Vector3D v0, Vector3D v1, Vector3D v2, Material material)
+Triangle::Triangle(const Vector3D& v0, const Vector3D& v1, const Vector3D& v2, const Material& material)
     : v0(v0), v1(v1), v2(v2), Shape(material) {}
 
 Triangle::Triangle(JsonObject json)
-    : v0(Vector3D(json["v0"].asArray())),
-      v1(Vector3D(json["v1"].asArray())),
-      v2(Vector3D(json["v2"].asArray())),
-      Shape(Material(json["material"].asObject())) {}
+    : Triangle(
+    Vector3D(json["v0"].asArray()),
+    Vector3D(json["v1"].asArray()),
+    Vector3D(json["v2"].asArray()),
+    Material(json["material"].asObject())
+) {}
 
 std::optional<double> Triangle::checkIntersection(const Ray ray) const {
   Vector3D e1 = v1 - v0;

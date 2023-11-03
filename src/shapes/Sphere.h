@@ -9,7 +9,7 @@ class Sphere : public Shape {
   Vector3D centre;
   double radius;
  public:
-  Sphere(Vector3D centre, double radius, Material material);
+  Sphere(const Vector3D& centre, double radius, const Material& material);
   explicit Sphere(JsonObject json);
 
   [[nodiscard]] std::optional<double> checkIntersection(Ray ray) const override;

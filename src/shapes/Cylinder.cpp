@@ -1,16 +1,19 @@
 #include <cmath>
 #include "Cylinder.h"
 
-Cylinder::Cylinder(Vector3D centre, Vector3D axis, double radius, double height,
-                   Material material)
+Cylinder::Cylinder(const Vector3D &centre, const Vector3D &axis, double radius, double height,
+                   const Material &material)
     : Shape(material), centre(centre), axis(axis), radius(radius),
       height(height) {}
 
-Cylinder::Cylinder(JsonObject json) : Shape(Material(json["material"].asObject())),
-                                      centre(Vector3D(json["center"].asArray())),
-                                      axis(Vector3D(json["axis"].asArray())),
-                                      radius(json["radius"].asDouble()),
-                                      height(json["height"].asDouble()) {}
+Cylinder::Cylinder(JsonObject json)
+    : Cylinder(
+    Vector3D(json["center"].asArray()),
+    Vector3D(json["axis"].asArray()),
+    json["radius"].asDouble(),
+    json["height"].asDouble(),
+    Material(json["material"].asObject())
+) {}
 
 std::optional<double> Cylinder::checkIntersection(const Ray ray) const {
   Vector3D oc = ray.getOrigin() - centre;

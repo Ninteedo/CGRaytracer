@@ -12,8 +12,8 @@ class Cylinder : public Shape {
   double height;
 
  public:
-  Cylinder(Vector3D centre, Vector3D axis, double radius, double height,
-           Material material);
+  Cylinder(const Vector3D& centre, const Vector3D& axis, double radius, double height,
+           const Material& material);
   explicit Cylinder(JsonObject json);
 
   [[nodiscard]] std::optional<double> checkIntersection(Ray ray) const override;
