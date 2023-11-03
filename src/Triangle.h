@@ -1,10 +1,10 @@
 #ifndef CGRAYTRACER_TRIANGLE_H
 #define CGRAYTRACER_TRIANGLE_H
 
-#include "Object.h"
+#include "Shape.h"
 #include "Vector3D.h"
 
-class Triangle : public Object {
+class Triangle : public Shape {
  private:
   Vector3D v0;
   Vector3D v1;

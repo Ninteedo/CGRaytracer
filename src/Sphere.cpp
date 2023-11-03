@@ -2,10 +2,10 @@
 #include <cmath>
 
 Sphere::Sphere(Vector3D centre, double radius, Material material)
-    : Object(material), centre(centre), radius(radius) {}
+    : Shape(material), centre(centre), radius(radius) {}
 
 Sphere::Sphere(JsonObject json)
-    : Object(Material(json["material"].asObject())),
+    : Shape(Material(json["material"].asObject())),
       centre(Vector3D(json["center"].asArray())),
       radius(json["radius"].asDouble()) {}
 

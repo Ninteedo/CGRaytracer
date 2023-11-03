@@ -8,7 +8,7 @@
 - [x] Colour
 - [ ] Texture
 - [ ] Material
-- [ ] Object
+- [ ] Shape
 - [ ] Scene
 - [ ] Camera
 - [ ] Light

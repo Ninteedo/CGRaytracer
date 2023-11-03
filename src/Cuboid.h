@@ -1,10 +1,10 @@
 #ifndef CGRAYTRACER_CUBOID_H
 #define CGRAYTRACER_CUBOID_H
 
-#include "Object.h"
+#include "Shape.h"
 #include "Vector3D.h"
 
-class Cuboid : public Object {
+class Cuboid : public Shape {
  private:
   Vector3D centre;
   Vector3D axis;

@@ -19,6 +19,6 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
   }
   JsonArray objectsJson = sceneObject["shapes"].asArray();
   for (int i = 0; i < objectsJson.size(); i++) {
-    objects.push_back(Object::fromJson(objectsJson[i].asObject()));
+    objects.push_back(Shape::fromJson(objectsJson[i].asObject()));
   }
 }

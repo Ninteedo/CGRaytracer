@@ -2,9 +2,9 @@
 #define CGRAYTRACER_CYLINDER_H
 
 #include "Vector3D.h"
-#include "Object.h"
+#include "Shape.h"
 
-class Cylinder : public Object {
+class Cylinder : public Shape {
  private:
   Vector3D centre;
   Vector3D axis;

@@ -5,16 +5,16 @@
 #include "Ray.h"
 #include <memory>
 
-class Object {
+class Shape {
  private:
   const Material material;
 
  public:
-  Object(const Material material);
+  Shape(const Material material);
 
-  // Create a new Object from JSON.
+  // Create a new Shape from JSON.
   // The class corresponds to the type field in the JSON.
-  static std::unique_ptr<Object> fromJson(JsonObject json);
+  static std::unique_ptr<Shape> fromJson(JsonObject json);
 
   virtual bool checkIntersection(const Ray ray, double t) const = 0;
 };

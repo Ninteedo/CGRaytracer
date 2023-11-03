@@ -1,12 +1,12 @@
-#include "Object.h"
+#include "Shape.h"
 #include "Cuboid.h"
 #include "Cylinder.h"
 #include "Sphere.h"
 #include "Triangle.h"
 
-Object::Object(const Material material) : material(material) {}
+Shape::Shape(const Material material) : material(material) {}
 
-std::unique_ptr<Object> Object::fromJson(JsonObject json) {
+std::unique_ptr<Shape> Shape::fromJson(JsonObject json) {
   std::string type = json["type"].asString();
   if (type == "sphere") {
     return std::make_unique<Sphere>(json);

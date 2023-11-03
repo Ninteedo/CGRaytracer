@@ -2,9 +2,9 @@
 #define CGRAYTRACER_SPHERE_H
 
 #include "Vector3D.h"
-#include "Object.h"
+#include "Shape.h"
 
-class Sphere : public Object {
+class Sphere : public Shape {
  private:
   Vector3D centre;
   double radius;

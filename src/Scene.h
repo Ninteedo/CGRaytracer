@@ -3,7 +3,7 @@
 
 #include "JSONParser.h"
 #include "Colour.h"
-#include "Object.h"
+#include "Shape.h"
 #include "LightSource.h"
 #include "Camera.h"
 #include "Image.h"
@@ -20,12 +20,12 @@ class Scene {
   RenderMode renderMode;
   Camera camera;
   Colour colour;
-  std::vector<std::unique_ptr<Object>> objects;
+  std::vector<std::unique_ptr<Shape>> objects;
   std::vector<std::unique_ptr<LightSource>> lightSources;
  public:
   Scene(Colour colour,
         Camera camera,
-        std::vector<Object> objects,
+        std::vector<Shape> objects,
         std::vector<LightSource> lightSources,
         int nBounces,
         RenderMode renderMode);
