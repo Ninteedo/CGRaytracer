@@ -35,6 +35,8 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/PinholeCamera.h
         src/shapes/Cylinder.cpp
         src/shapes/Triangle.cpp
+        src/Interval.cpp
+        src/Interval.h
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
