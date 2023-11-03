@@ -25,8 +25,8 @@ class Scene {
  public:
   Scene(Colour colour,
         Camera camera,
-        std::vector<Shape> objects,
-        std::vector<LightSource> lightSources,
+        std::vector<std::unique_ptr<Shape>> objects,
+        std::vector<std::unique_ptr<LightSource>> lightSources,
         int nBounces,
         RenderMode renderMode);
   Scene(JsonObject sceneJson);
@@ -40,15 +40,17 @@ class Scene {
   struct Intersection {
     bool hit;
     double t;
+    Shape* shapeHit;
   };
 
   Intersection checkIntersection(Ray ray, double t) const {
     for (int i = 0; i < objects.size(); i++) {
-      if (objects[i]->checkIntersection(ray, t)) {
-        return {true, t};
+      Shape *shape = objects[i].get();
+      if (shape->checkIntersection(ray, t)) {
+        return {true, t, shape};
       }
     }
-    return {false, t};
+    return {false, t, nullptr};
   }
 };
 

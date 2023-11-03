@@ -16,6 +16,8 @@ class Shape {
   // The class corresponds to the type field in the JSON.
   static std::unique_ptr<Shape> fromJson(JsonObject json);
 
+  Material getMaterial() const;
+
   virtual bool checkIntersection(const Ray ray, double t) const = 0;
 };
 

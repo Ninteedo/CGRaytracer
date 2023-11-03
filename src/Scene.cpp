@@ -50,7 +50,7 @@ Image Scene::renderBinary() {
 
       Colour pixelColour;
       if (intersection.hit) {
-        pixelColour = Colour(1, 0, 0);
+        pixelColour = intersection.shapeHit->getMaterial().getDiffuseColour();
       } else {
         pixelColour = colour;
       }

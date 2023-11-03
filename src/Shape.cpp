@@ -20,3 +20,6 @@ std::unique_ptr<Shape> Shape::fromJson(JsonObject json) {
     throw std::runtime_error("Unknown object type: " + type);
   }
 }
+Material Shape::getMaterial() const {
+  return material;
+}
