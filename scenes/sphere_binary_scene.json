@@ -19,8 +19,8 @@
             "shapes":[
                 {
                     "type":"sphere",
-                    "center": [0, -25.0, 0],
-                    "radius":25.1,
+                    "center": [0, 0.35, 1.0],
+                    "radius": 0.1,
                     "material":
                         {
                             "ks":0.1,
