@@ -7,16 +7,16 @@
 - [x] Ray
 - [x] Colour
 - [ ] Texture
-- [ ] Material
-- [ ] Shape
-- [ ] Scene
-- [ ] Camera
+- [x] Material
+- [x] Shape
+- [x] Scene
+- [x] Camera
 - [ ] Light
 - [ ] Shader
 
 ## Rendering
 
-- [ ] Intersection computation
+- [x] Intersection computation
 - [ ] Colour computation
 - [ ] Shadows handling
 - [ ] Reflections handling
@@ -36,5 +36,5 @@
 ## Input-Output
 
 - [x] JSON parsing
-- [ ] Scene loading
-- [ ] Image output
+- [x] Scene loading
+- [x] Image output
