@@ -20,6 +20,16 @@ public:
     Material(double ks, double kd, int specularExponent, Colour diffuseColour, Colour specularColour, bool isReflective, double reflectivity, bool isRefractive, double refractiveIndex);
     explicit Material(JsonObject materialJson);
     ~Material();
+
+    double getKs() const;
+    double getKd() const;
+    int getSpecularExponent() const;
+    Colour getDiffuseColour() const;
+    Colour getSpecularColour() const;
+    bool getIsReflective() const;
+    double getReflectivity() const;
+    bool getIsRefractive() const;
+    double getRefractiveIndex() const;
 };
 
 #endif //CGRAYTRACER_MATERIAL_H

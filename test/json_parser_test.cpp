@@ -1,4 +1,4 @@
-#include "../JSONParser.h"
+#include "../src/JSONParser.h"
 #include <iostream>
 #include <cassert>
 
