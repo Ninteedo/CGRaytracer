@@ -55,6 +55,9 @@ class Vector3D {
   // Magnitude of the vector
   [[nodiscard]] double magnitude() const;
 
+  // Squared magnitude of the vector
+  [[nodiscard]] double magnitudeSquared() const;
+
   // Normalize the vector
   [[nodiscard]] Vector3D normalize() const;
 

@@ -57,6 +57,10 @@ double Vector3D::magnitude() const {
   return sqrt(x * x + y * y + z * z);
 }
 
+double Vector3D::magnitudeSquared() const {
+  return x * x + y * y + z * z;
+}
+
 Vector3D Vector3D::normalize() const {
   const double mag = magnitude();
   return {x / mag, y / mag, z / mag};
