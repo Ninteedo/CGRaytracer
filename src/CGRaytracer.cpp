@@ -4,13 +4,14 @@
 #include "CGRaytracer.h"
 
 #include "Image.h"
+#include "Scene.h"
 
 using namespace std;
 
-// int main()
+// int runJsonParserTest()
 // {
 // 	// cout << "Hello CMake." << endl;
-// 	
+//
 // 	const unsigned int width = 256;
 // 	const unsigned int height = 256;
 //
@@ -28,7 +29,7 @@ using namespace std;
 //             if (x > width / 2 && y > height / 2) {
 //                 b = 1.0f - r - g;
 //             }
-//             
+//
 //             img.setColor(x, y, Colour(r, g, b));
 //         }
 //     }
@@ -44,3 +45,12 @@ using namespace std;
 //
 // 	return 0;
 // }
+
+int main() {
+  // Load the scene from the JSON file
+  std::string sceneFilename = "sphere_binary_scene.json";
+
+  Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
+
+  cout << "Loaded scene from " << sceneFilename << endl;
+}

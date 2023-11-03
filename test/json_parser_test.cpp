@@ -88,7 +88,7 @@ void testErrorConditions() {
     assert(caught);
 }
 
-int main() {
+int runJsonParserTest() {
     testSimpleValues();
     testObjectsAndArrays();
     testNestedStructures();
