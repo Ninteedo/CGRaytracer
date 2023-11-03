@@ -2,6 +2,8 @@
 
 Colour::Colour(double red, double green, double blue) : Vector3D(red, green, blue) {}
 
+Colour::Colour(JsonArray json) : Vector3D(json) {}
+
 double Colour::red() const {
 	return getX();
 }

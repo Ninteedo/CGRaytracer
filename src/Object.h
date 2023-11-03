@@ -11,7 +11,7 @@ private:
 public:
     Object(const Material material);
 
-    virtual bool checkIntersection(const Ray ray, double t) const;
+    virtual bool checkIntersection(const Ray ray, double t) const = 0;
 };
 
 #endif //CGRAYTRACER_OBJECT_H

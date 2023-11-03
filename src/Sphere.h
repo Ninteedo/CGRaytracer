@@ -9,10 +9,10 @@ private:
     Vector3D centre;
     double radius;
 public:
-    Sphere(Vector3D centre, double radius, const Material material);
+    Sphere(Vector3D centre, double radius, Material material);
     Sphere(JsonObject json);
 
-    bool checkIntersection(const Ray ray, double t) const override;
+    bool checkIntersection(Ray ray, double t) const override;
 };
 
 #endif //CGRAYTRACER_SPHERE_H
