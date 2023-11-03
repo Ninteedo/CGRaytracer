@@ -19,7 +19,9 @@ class Shape {
 
   Material getMaterial() const;
 
-  virtual std::optional<double> checkIntersection(Ray ray) const = 0;
+  [[nodiscard]] virtual std::optional<double> checkIntersection(Ray ray) const = 0;
+
+  [[nodiscard]] virtual Vector3D getSurfaceNormal(Vector3D point) const = 0;
 };
 
 #endif //CGRAYTRACER_OBJECT_H

@@ -34,3 +34,7 @@ std::optional<double> Triangle::checkIntersection(const Ray ray) const {
   }
   return std::nullopt;
 }
+
+Vector3D Triangle::getSurfaceNormal(Vector3D point) const {
+  return (v1 - v0).cross(v2 - v0);
+}

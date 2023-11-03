@@ -16,7 +16,9 @@ class Cylinder : public Shape {
            Material material);
   explicit Cylinder(JsonObject json);
 
-  std::optional<double> checkIntersection(Ray ray) const override;
+  [[nodiscard]] std::optional<double> checkIntersection(Ray ray) const override;
+
+  [[nodiscard]] Vector3D getSurfaceNormal(Vector3D point) const override;
 };
 
 #endif //CGRAYTRACER_CYLINDER_H

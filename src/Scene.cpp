@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 #include <utility>
+#include <cmath>
 
 Scene::Scene(Colour colour,
              const Camera &camera,
@@ -45,7 +46,7 @@ Scene Scene::loadFromFile(const std::string &filename) {
 
 Image Scene::render() {
   if (renderMode == BINARY) {
-    return renderBinary();
+    return renderShaded();
 //  } else if (renderMode == PHONG) {
 //    return renderPhong();
 //  } else if (renderMode == PATHTRACER) {
@@ -66,6 +67,34 @@ Image Scene::renderBinary() {
       Colour pixelColour;
       if (intersection.has_value()) {
         pixelColour = intersection.value().first->getMaterial().getDiffuseColour();
+      } else {
+        pixelColour = colour;
+      }
+
+      image.setColor(x, y, pixelColour);
+    }
+  }
+  return image;
+}
+
+Image Scene::renderShaded() {
+  Image image(camera.getWidth(), camera.getHeight());
+
+  for (unsigned int y = 0; y < camera.getHeight(); y++) {
+    for (unsigned int x = 0; x < camera.getWidth(); x++) {
+      Ray ray = camera.getRay(x, y);
+      std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
+
+      Colour pixelColour;
+      if (intersection.has_value()) {
+        Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
+
+        // Taking modulus of negative values
+        double r = std::fabs(normal.getX());
+        double g = std::fabs(normal.getY());
+        double b = std::fabs(normal.getZ());
+
+        pixelColour = Colour(r, g, b);
       } else {
         pixelColour = colour;
       }

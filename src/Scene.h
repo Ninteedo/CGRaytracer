@@ -36,6 +36,7 @@ class Scene {
 
   Image render();
   Image renderBinary();
+  Image renderShaded();
 
   [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray) const;
 };

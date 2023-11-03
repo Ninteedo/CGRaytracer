@@ -23,3 +23,6 @@ std::optional<double> Sphere::checkIntersection(const Ray ray) const {
     return t;
   }
 }
+Vector3D Sphere::getSurfaceNormal(Vector3D point) const {
+  return (point - centre) / radius;
+}

@@ -30,3 +30,10 @@ std::optional<double> Cylinder::checkIntersection(const Ray ray) const {
   }
   return std::nullopt;
 }
+
+Vector3D Cylinder::getSurfaceNormal(Vector3D point) const {
+  // TODO: this is probably wrong
+  Vector3D projection = axis * (point.dot(axis) / axis.dot(axis));
+  Vector3D normal = (point - projection - centre) / radius;
+  return normal;
+}
