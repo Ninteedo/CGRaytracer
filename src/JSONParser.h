@@ -64,6 +64,7 @@ class JsonParser {
  public:
   JsonParser();
   JsonValue parse(const std::string &json);
+  JsonValue parseFile(const std::string &filename);
 
  private:
   size_t pos;

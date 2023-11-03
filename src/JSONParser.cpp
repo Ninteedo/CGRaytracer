@@ -3,12 +3,33 @@
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
+#include <fstream>
+#include <algorithm>
 
 JsonParseError::JsonParseError(const std::string &json, size_t position, const std::string &message) {
   std::stringstream ss;
-  ss << "Error at position " << position << ": " << message << std::endl;
-  ss << json << std::endl;
-  ss << std::string(position, ' ') << '^';
+  size_t line_start = json.rfind('\n', position);
+  size_t line_end = json.find('\n', position);
+
+  // If line start not found, set it to the beginning of json
+  if (line_start == std::string::npos) {
+    line_start = 0;
+  } else {
+    line_start++;  // Skip '\n' at the start of the line
+  }
+
+  // If line end not found, set it to the end of json
+  if (line_end == std::string::npos) {
+    line_end = json.length();
+  }
+
+  std::string line = json.substr(line_start, line_end - line_start);
+  size_t column = position - line_start;
+  size_t line_number = std::count(json.begin(), json.begin() + position, '\n') + 1;  // Count new lines
+
+  ss << "Error at line " << line_number << ", column " << (column + 1) << ": " << message << std::endl;
+  ss << line << std::endl;
+  ss << std::string(column, ' ') << '^';
   errorMessage = ss.str();
 }
 
@@ -68,6 +89,17 @@ JsonValue JsonParser::parse(const std::string &json) {
   this->json = json;
   pos = 0;
   return parseValue();
+}
+
+JsonValue JsonParser::parseFile(const std::string &filename) {
+  std::ifstream file(filename);
+  if (!file.is_open()) {
+    throw std::runtime_error("Could not open file " + filename);
+  }
+
+  std::stringstream ss;
+  ss << file.rdbuf();
+  return parse(ss.str());
 }
 
 JsonValue JsonParser::parseValue() {
