@@ -3,7 +3,7 @@
 #include <utility>
 
 Scene::Scene(Colour colour,
-             const Camera& camera,
+             const Camera &camera,
              std::vector<std::shared_ptr<Shape>> objects,
              std::vector<std::shared_ptr<LightSource>> lightSources,
              int nBounces,
@@ -29,18 +29,18 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
   JsonObject sceneObject = json["scene"].asObject();
   colour = Colour(sceneObject["backgroundcolor"].asArray());
   JsonArray lightsJson = sceneObject["lightsources"].asArray();
-  for (const auto & i : lightsJson) {
+  for (const auto &i : lightsJson) {
     lightSources.push_back(LightSource::fromJson(i.asObject()));
   }
   JsonArray objectsJson = sceneObject["shapes"].asArray();
-  for (const auto & i : objectsJson) {
+  for (const auto &i : objectsJson) {
     objects.push_back(Shape::fromJson(i.asObject()));
   }
 }
 
 Scene Scene::loadFromFile(const std::string &filename) {
   JsonParser parser;
-  return {parser.parseFile(filename).asObject()};
+  return Scene(parser.parseFile(filename).asObject());
 }
 
 Image Scene::render() {
@@ -76,10 +76,10 @@ Image Scene::renderBinary() {
   return image;
 }
 
-std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray& ray) const {
+std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {
   std::shared_ptr<Shape> closestShape = nullptr;
   double closestT = 0;
-  for (const auto& shape : objects) {
+  for (const auto &shape : objects) {
     std::optional<double> t = shape->checkIntersection(ray);
     if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
       closestShape = shape;

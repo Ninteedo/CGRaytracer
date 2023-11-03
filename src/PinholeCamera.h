@@ -5,9 +5,9 @@
 
 class PinholeCamera : public Camera {
  public:
-  PinholeCamera(Vector3D position,
-                Vector3D lookAt,
-                Vector3D upVector,
+  PinholeCamera(const Vector3D &position,
+                const Vector3D &lookAt,
+                const Vector3D &upVector,
                 double fieldOfView,
                 double exposure,
                 int width,

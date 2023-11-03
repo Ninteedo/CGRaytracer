@@ -11,7 +11,7 @@ class Shape {
   const Material material;
 
  public:
-  explicit Shape(const Material& material);
+  explicit Shape(const Material &material);
 
   // Create a new Shape from JSON.
   // The class corresponds to the type field in the JSON.

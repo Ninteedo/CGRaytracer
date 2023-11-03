@@ -25,9 +25,9 @@ class Vector3D {
 
   // Getter methods
 
-  double getX() const;
-  double getY() const;
-  double getZ() const;
+  [[nodiscard]] double getX() const;
+  [[nodiscard]] double getY() const;
+  [[nodiscard]] double getZ() const;
 
   double operator[](int i) const;
 
@@ -47,16 +47,16 @@ class Vector3D {
   Vector3D operator/(double val) const;
 
   // Dot product
-  double dot(const Vector3D &v) const;
+  [[nodiscard]] double dot(const Vector3D &v) const;
 
   // Cross product
-  Vector3D cross(const Vector3D &v) const;
+  [[nodiscard]] Vector3D cross(const Vector3D &v) const;
 
   // Magnitude of the vector
-  double magnitude() const;
+  [[nodiscard]] double magnitude() const;
 
   // Normalize the vector
-  Vector3D normalize() const;
+  [[nodiscard]] Vector3D normalize() const;
 
   // Print vector
   void print() const;

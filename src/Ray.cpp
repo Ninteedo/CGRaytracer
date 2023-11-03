@@ -5,10 +5,10 @@ Ray::Ray(const Vector3D &origin, const Vector3D &direction)
     : origin(origin), direction(direction) {}
 
 // Copy constructor
-Ray::Ray(const Ray &other) : origin(other.origin), direction(other.direction) {}
+Ray::Ray(const Ray &other) = default;
 
 // Destructor
-Ray::~Ray() {}
+Ray::~Ray() = default;
 
 // Getter for origin
 Vector3D Ray::getOrigin() const {

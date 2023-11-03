@@ -17,9 +17,9 @@ class Camera {
   int height;
 
  public:
-  Camera(Vector3D position,
-         Vector3D lookAt,
-         Vector3D upVector,
+  Camera(const Vector3D &position,
+         const Vector3D &lookAt,
+         const Vector3D &upVector,
          double fieldOfView,
          double exposure,
          int width,
@@ -27,19 +27,19 @@ class Camera {
   explicit Camera(JsonObject cameraJson);
   ~Camera();
 
-  std::unique_ptr<Camera> fromJson(JsonObject json);
+  static std::unique_ptr<Camera> fromJson(JsonObject json);
 
   // Getters
 
-  Vector3D getPosition() const;
-  Vector3D getLookAt() const;
-  Vector3D getUpVector() const;
-  double getFieldOfView() const;
-  double getExposure() const;
-  int getWidth() const;
-  int getHeight() const;
+  [[nodiscard]] Vector3D getPosition() const;
+  [[nodiscard]] Vector3D getLookAt() const;
+  [[nodiscard]] Vector3D getUpVector() const;
+  [[nodiscard]] double getFieldOfView() const;
+  [[nodiscard]] double getExposure() const;
+  [[nodiscard]] int getWidth() const;
+  [[nodiscard]] int getHeight() const;
 
-  Ray getRay(double x, double y) const;
+  [[nodiscard]] Ray getRay(double x, double y) const;
 };
 
 #endif //CGRAYTRACER_CAMERA_H

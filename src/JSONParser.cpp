@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <algorithm>
+#include <utility>
 
 JsonParseError::JsonParseError(const std::string &json, size_t position, const std::string &message) {
   std::stringstream ss;
@@ -41,10 +42,10 @@ JsonValue::JsonValue() : type(Type::Null) {}
 JsonValue::JsonValue(bool value) : type(Type::Boolean), boolValue(value) {}
 JsonValue::JsonValue(int value) : type(Type::Number), numberValue(static_cast<double>(value)) {}
 JsonValue::JsonValue(double value) : type(Type::Number), numberValue(value) {}
-JsonValue::JsonValue(const std::string &value) : type(Type::String), stringValue(value) {}
+JsonValue::JsonValue(std::string value) : type(Type::String), stringValue(std::move(value)) {}
 JsonValue::JsonValue(const char *value) : type(Type::String), stringValue(value) {}
-JsonValue::JsonValue(const JsonObject &value) : type(Type::Object), objectValue(value) {}
-JsonValue::JsonValue(const JsonArray &value) : type(Type::Array), arrayValue(value) {}
+JsonValue::JsonValue(JsonObject value) : type(Type::Object), objectValue(std::move(value)) {}
+JsonValue::JsonValue(JsonArray value) : type(Type::Array), arrayValue(std::move(value)) {}
 
 JsonValue::Type JsonValue::getType() const { return type; }
 bool JsonValue::isNull() const { return type == Type::Null; }
@@ -76,6 +77,7 @@ char JsonParser::peekChar() {
 // Otherwise the input position is left at the end of the pattern.
 bool JsonParser::match(const std::string &pattern) {
   size_t start = pos;
+
   for (char c : pattern) {
     if (pos >= json.length() || json[pos++] != c) {
       pos = start;
@@ -85,8 +87,8 @@ bool JsonParser::match(const std::string &pattern) {
   return true;
 }
 
-JsonValue JsonParser::parse(const std::string &json) {
-  this->json = json;
+JsonValue JsonParser::parse(const std::string &jsonInput) {
+  this->json = jsonInput;
   pos = 0;
   return parseValue();
 }
@@ -110,14 +112,14 @@ JsonValue JsonParser::parseValue() {
 
   char c = peekChar();
   switch (c) {
-    case '{': return parseObject();
-    case '[': return parseArray();
-    case '"': return parseString();
-    case 't': return parseBoolean();
-    case 'f': return parseBoolean();
+    case '{': return JsonValue(parseObject());
+    case '[': return JsonValue(parseArray());
+    case '"': return JsonValue(parseString());
+    case 't': return JsonValue(parseBoolean());
+    case 'f': return JsonValue(parseBoolean());
     case 'n': parseNull();
-      return JsonValue();
-    default: return parseNumber();
+      return {};
+    default: return JsonValue(parseNumber());
   }
 }
 
@@ -160,7 +162,7 @@ JsonArray JsonParser::parseArray() {
   skipWhitespace();
 
   // Checking the next character. If it's not ']', we start parsing the list
-  if(peekChar() != ']'){
+  if (peekChar() != ']') {
     do {
       arr.push_back(parseValue());
       skipWhitespace();

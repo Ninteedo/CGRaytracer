@@ -9,7 +9,7 @@ class JsonParseError : public std::exception {
  public:
   JsonParseError(const std::string &json, size_t position, const std::string &message);
 
-  virtual const char *what() const noexcept override;
+  [[nodiscard]] const char *what() const noexcept override;
 
  private:
   std::string errorMessage;
@@ -32,22 +32,22 @@ class JsonValue {
   };
 
   JsonValue();
-  JsonValue(bool value);
-  JsonValue(int value);
-  JsonValue(double value);
-  JsonValue(const std::string &value);
-  JsonValue(const char *value);
-  JsonValue(const JsonObject &value);
-  JsonValue(const JsonArray &value);
+  explicit JsonValue(bool value);
+  explicit JsonValue(int value);
+  explicit JsonValue(double value);
+  explicit JsonValue(std::string value);
+  explicit JsonValue(const char *value);
+  explicit JsonValue(JsonObject value);
+  explicit JsonValue(JsonArray value);
 
-  Type getType() const;
-  bool isNull() const;
-  bool asBool() const;
-  int asInt() const;
-  double asDouble() const;
-  const std::string &asString() const;
-  const JsonObject &asObject() const;
-  const JsonArray &asArray() const;
+  [[nodiscard]] Type getType() const;
+  [[nodiscard]] bool isNull() const;
+  [[nodiscard]] bool asBool() const;
+  [[nodiscard]] int asInt() const;
+  [[nodiscard]] double asDouble() const;
+  [[nodiscard]] const std::string &asString() const;
+  [[nodiscard]] const JsonObject &asObject() const;
+  [[nodiscard]] const JsonArray &asArray() const;
 
  private:
   Type type;
@@ -63,7 +63,7 @@ class JsonValue {
 class JsonParser {
  public:
   JsonParser();
-  JsonValue parse(const std::string &json);
+  JsonValue parse(const std::string &jsonInput);
   JsonValue parseFile(const std::string &filename);
 
  private:

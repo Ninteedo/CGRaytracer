@@ -1,13 +1,15 @@
 #include "Material.h"
 
+#include <utility>
+
 Material::Material(double ks, double kd, int specularExponent,
                    Colour diffuseColour, Colour specularColour,
                    bool isReflective, double reflectivity, bool isRefractive,
                    double refractiveIndex)
     : ks(ks), kd(kd), specularExponent(specularExponent),
-      diffuseColour(diffuseColour), specularColour(specularColour),
+      diffuseColour(std::move(diffuseColour)), specularColour(std::move(specularColour)),
       isReflective(isReflective), reflectivity(reflectivity),
-      isRefractive(reflectivity), refractiveIndex(refractiveIndex) {}
+      isRefractive(isRefractive), refractiveIndex(refractiveIndex) {}
 
 Material::Material(JsonObject materialJson)
     : ks(materialJson["ks"].asDouble()), kd(materialJson["kd"].asDouble()),

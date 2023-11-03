@@ -14,7 +14,6 @@ enum RenderMode {
   PATHTRACER,
 };
 
-
 class Scene {
  private:
   int nBounces;
@@ -25,20 +24,20 @@ class Scene {
   std::vector<std::shared_ptr<LightSource>> lightSources;
  public:
   Scene(Colour colour,
-        const Camera& camera,
+        const Camera &camera,
         std::vector<std::shared_ptr<Shape>> objects,
         std::vector<std::shared_ptr<LightSource>> lightSources,
         int nBounces,
         RenderMode renderMode);
-  Scene(JsonObject sceneJson);
+  explicit Scene(JsonObject sceneJson);
   ~Scene() = default;
 
-  static Scene loadFromFile(const std::string& filename);
+  static Scene loadFromFile(const std::string &filename);
 
   Image render();
   Image renderBinary();
 
-  std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray& ray) const;
+  [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray) const;
 };
 
 #endif //CGRAYTRACER_SCENE_H

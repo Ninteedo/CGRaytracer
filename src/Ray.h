@@ -20,13 +20,13 @@ class Ray {
   ~Ray();
 
   // Getter for origin
-  Vector3D getOrigin() const;
+  [[nodiscard]] Vector3D getOrigin() const;
 
   // Getter for direction
-  Vector3D getDirection() const;
+  [[nodiscard]] Vector3D getDirection() const;
 
   // Function to compute P(t) = A + tB
-  Vector3D at(double t) const;
+  [[nodiscard]] Vector3D at(double t) const;
 };
 
 #endif // RAY_H

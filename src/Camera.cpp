@@ -2,9 +2,9 @@
 #include "Camera.h"
 #include "PinholeCamera.h"
 
-Camera::Camera(Vector3D position,
-               Vector3D lookAt,
-               Vector3D upVector,
+Camera::Camera(const Vector3D &position,
+               const Vector3D &lookAt,
+               const Vector3D &upVector,
                double fieldOfView,
                double exposure,
                int width,
@@ -25,7 +25,7 @@ Camera::Camera(JsonObject json)
       width(json["width"].asInt()),
       height(json["height"].asInt()) {}
 
-Camera::~Camera() {}
+Camera::~Camera() = default;
 
 std::unique_ptr<Camera> Camera::fromJson(JsonObject json) {
   std::string type = json["type"].asString();
@@ -69,5 +69,5 @@ Ray Camera::getRay(double x, double y) const {
   Vector3D rayDirection = (-w + u * Px + v * Py).normalize(); // Normalize the direction
 
   // Step 4: Create and return the ray
-  return Ray(position, rayDirection);
+  return {position, rayDirection};
 }

@@ -9,9 +9,9 @@ class PointLight : public LightSource {
   Vector3D intensity;
 
  public:
-  PointLight(Vector3D position, Vector3D intensity);
+  PointLight(const Vector3D &position, const Vector3D &intensity);
 
-  PointLight(JsonObject json);
+  explicit PointLight(JsonObject json);
 };
 
 #endif //CGRAYTRACER_POINTLIGHT_H

@@ -6,20 +6,19 @@
 
 class Colour : public Vector3D {
  public:
-  // Constructor
-  Colour(double red = 0, double green = 0, double blue = 0);
+  explicit Colour(double red = 0, double green = 0, double blue = 0);
 
-  Colour(JsonArray json);
+  explicit Colour(JsonArray json);
 
-  double red() const;
-  double green() const;
-  double blue() const;
+  [[nodiscard]] double red() const;
+  [[nodiscard]] double green() const;
+  [[nodiscard]] double blue() const;
 
-  int getRed() const;
-  int getGreen() const;
-  int getBlue() const;
+  [[nodiscard]] int getRed() const;
+  [[nodiscard]] int getGreen() const;
+  [[nodiscard]] int getBlue() const;
 
-  std::string toPPM() const;
+  [[nodiscard]] std::string toPPM() const;
 };
 
 #endif // COLOUR_H

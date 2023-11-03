@@ -1,8 +1,10 @@
 #include "Colour.h"
 
+#include <utility>
+
 Colour::Colour(double red, double green, double blue) : Vector3D(red, green, blue) {}
 
-Colour::Colour(JsonArray json) : Vector3D(json) {}
+Colour::Colour(JsonArray json) : Vector3D(std::move(json)) {}
 
 double Colour::red() const {
   return getX();

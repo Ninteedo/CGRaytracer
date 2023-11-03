@@ -29,15 +29,15 @@ class Material {
   explicit Material(JsonObject materialJson);
   ~Material();
 
-  double getKs() const;
-  double getKd() const;
-  int getSpecularExponent() const;
-  Colour getDiffuseColour() const;
-  Colour getSpecularColour() const;
-  bool getIsReflective() const;
-  double getReflectivity() const;
-  bool getIsRefractive() const;
-  double getRefractiveIndex() const;
+  [[nodiscard]] double getKs() const;
+  [[nodiscard]] double getKd() const;
+  [[nodiscard]] int getSpecularExponent() const;
+  [[nodiscard]] Colour getDiffuseColour() const;
+  [[nodiscard]] Colour getSpecularColour() const;
+  [[nodiscard]] bool getIsReflective() const;
+  [[nodiscard]] double getReflectivity() const;
+  [[nodiscard]] bool getIsRefractive() const;
+  [[nodiscard]] double getRefractiveIndex() const;
 };
 
 #endif //CGRAYTRACER_MATERIAL_H
