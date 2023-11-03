@@ -22,3 +22,7 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
     objects.push_back(Shape::fromJson(objectsJson[i].asObject()));
   }
 }
+Scene Scene::loadFromFile(const std::string& filename) {
+    JsonParser parser;
+    return {parser.parseFile(filename).asObject()};
+}

@@ -15,7 +15,7 @@ class Cuboid : public Shape {
          Material material);
   Cuboid(JsonObject json);
 
-  bool checkIntersection(Ray ray, double t) const override;
+//  bool checkIntersection(Ray ray, double t) const override;
 };
 
 #endif // CGRAYTRACER_CUBOID_H

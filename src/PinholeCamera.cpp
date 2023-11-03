@@ -10,3 +10,5 @@ PinholeCamera::PinholeCamera(Vector3D position,
     : Camera(position, lookAt, upVector, fieldOfView, exposure, width, height) {}
 
 PinholeCamera::PinholeCamera(JsonObject cameraJson) : Camera(cameraJson) {}
+
+PinholeCamera::~PinholeCamera() {}

@@ -30,7 +30,9 @@ class Scene {
         int nBounces,
         RenderMode renderMode);
   Scene(JsonObject sceneJson);
-  ~Scene();
+  ~Scene() = default;
+
+  static Scene loadFromFile(const std::string& filename);
 
   Image render();
 };
