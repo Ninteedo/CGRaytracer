@@ -16,6 +16,10 @@ class Camera {
   int width;
   int height;
 
+  // precomputed values
+  Vector3D w, u, v;
+  double viewPlaneWidth, viewPlaneHeight;
+
  public:
   Camera(const Vector3D &position,
          const Vector3D &lookAt,
