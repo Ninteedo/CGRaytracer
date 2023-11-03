@@ -10,9 +10,9 @@ class Sphere : public Shape {
   double radius;
  public:
   Sphere(Vector3D centre, double radius, Material material);
-  Sphere(JsonObject json);
+  explicit Sphere(JsonObject json);
 
-  bool checkIntersection(Ray ray, double t) const override;
+  std::optional<double> checkIntersection(Ray ray) const override;
 };
 
 #endif //CGRAYTRACER_SPHERE_H

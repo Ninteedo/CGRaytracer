@@ -12,9 +12,9 @@ class Triangle : public Shape {
 
  public:
   Triangle(Vector3D v0, Vector3D v1, Vector3D v2, Material material);
-  Triangle(JsonObject json);
+  explicit Triangle(JsonObject json);
 
-  bool checkIntersection(Ray ray, double t) const override;
+  std::optional<double> checkIntersection(Ray ray) const override;
 };
 
 #endif // CGRAYTRACER_TRIANGLE_H

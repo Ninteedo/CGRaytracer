@@ -4,9 +4,9 @@
 #include "Sphere.h"
 #include "Triangle.h"
 
-Shape::Shape(const Material material) : material(material) {}
+Shape::Shape(const Material& material) : material(material) {}
 
-std::unique_ptr<Shape> Shape::fromJson(JsonObject json) {
+std::shared_ptr<Shape> Shape::fromJson(JsonObject json) {
   std::string type = json["type"].asString();
   if (type == "sphere") {
     return std::make_unique<Sphere>(json);

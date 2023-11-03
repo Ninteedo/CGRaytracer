@@ -1,5 +1,20 @@
 #include "Scene.h"
 
+#include <utility>
+
+Scene::Scene(Colour colour,
+             const Camera& camera,
+             std::vector<std::shared_ptr<Shape>> objects,
+             std::vector<std::shared_ptr<LightSource>> lightSources,
+             int nBounces,
+             RenderMode renderMode)
+    : colour(std::move(colour)),
+      camera(camera),
+      objects(std::move(objects)),
+      lightSources(std::move(lightSources)),
+      nBounces(nBounces),
+      renderMode(renderMode) {}
+
 Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json["camera"].asObject()) {
   std::string renderModeString = json["rendermode"].asString();
   if (renderModeString == "binary") {
@@ -14,18 +29,18 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
   JsonObject sceneObject = json["scene"].asObject();
   colour = Colour(sceneObject["backgroundcolor"].asArray());
   JsonArray lightsJson = sceneObject["lightsources"].asArray();
-  for (int i = 0; i < lightsJson.size(); i++) {
-    lightSources.push_back(LightSource::fromJson(lightsJson[i].asObject()));
+  for (const auto & i : lightsJson) {
+    lightSources.push_back(LightSource::fromJson(i.asObject()));
   }
   JsonArray objectsJson = sceneObject["shapes"].asArray();
-  for (int i = 0; i < objectsJson.size(); i++) {
-    objects.push_back(Shape::fromJson(objectsJson[i].asObject()));
+  for (const auto & i : objectsJson) {
+    objects.push_back(Shape::fromJson(i.asObject()));
   }
 }
 
-Scene Scene::loadFromFile(const std::string& filename) {
-    JsonParser parser;
-    return {parser.parseFile(filename).asObject()};
+Scene Scene::loadFromFile(const std::string &filename) {
+  JsonParser parser;
+  return {parser.parseFile(filename).asObject()};
 }
 
 Image Scene::render() {
@@ -46,11 +61,11 @@ Image Scene::renderBinary() {
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       Ray ray = camera.getRay(x, y);
-      Intersection intersection = checkIntersection(ray, 1);
+      std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
 
       Colour pixelColour;
-      if (intersection.hit) {
-        pixelColour = intersection.shapeHit->getMaterial().getDiffuseColour();
+      if (intersection.has_value()) {
+        pixelColour = intersection.value().first->getMaterial().getDiffuseColour();
       } else {
         pixelColour = colour;
       }
@@ -59,4 +74,21 @@ Image Scene::renderBinary() {
     }
   }
   return image;
+}
+
+std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray& ray) const {
+  std::shared_ptr<Shape> closestShape = nullptr;
+  double closestT = 0;
+  for (const auto& shape : objects) {
+    std::optional<double> t = shape->checkIntersection(ray);
+    if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
+      closestShape = shape;
+      closestT = t.value();
+    }
+  }
+  if (closestShape == nullptr) {
+    return std::nullopt;
+  } else {
+    return std::make_pair(closestShape, closestT);
+  }
 }

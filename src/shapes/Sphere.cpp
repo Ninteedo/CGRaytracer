@@ -9,11 +9,17 @@ Sphere::Sphere(JsonObject json)
       centre(Vector3D(json["center"].asArray())),
       radius(json["radius"].asDouble()) {}
 
-bool Sphere::checkIntersection(Ray ray, double t) const {
+std::optional<double> Sphere::checkIntersection(const Ray ray) const {
   Vector3D oc = ray.getOrigin() - centre;
   double a = ray.getDirection().dot(ray.getDirection());
   double b = 2.0 * oc.dot(ray.getDirection());
   double c = oc.dot(oc) - radius * radius;
   double discriminant = b * b - 4 * a * c;
-  return (discriminant >= 0);
+
+  if (discriminant < 0) {
+    return std::nullopt;
+  } else {
+    double t = (-b - sqrt(discriminant)) / (2.0 * a);
+    return t;
+  }
 }

@@ -14,9 +14,9 @@ class Cylinder : public Shape {
  public:
   Cylinder(Vector3D centre, Vector3D axis, double radius, double height,
            Material material);
-  Cylinder(JsonObject json);
+  explicit Cylinder(JsonObject json);
 
-  bool checkIntersection(Ray ray, double t) const override;
+  std::optional<double> checkIntersection(Ray ray) const override;
 };
 
 #endif //CGRAYTRACER_CYLINDER_H

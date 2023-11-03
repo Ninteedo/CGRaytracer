@@ -14,19 +14,20 @@ enum RenderMode {
   PATHTRACER,
 };
 
+
 class Scene {
  private:
   int nBounces;
   RenderMode renderMode;
   Camera camera;
   Colour colour;
-  std::vector<std::unique_ptr<Shape>> objects;
-  std::vector<std::unique_ptr<LightSource>> lightSources;
+  std::vector<std::shared_ptr<Shape>> objects;
+  std::vector<std::shared_ptr<LightSource>> lightSources;
  public:
   Scene(Colour colour,
-        Camera camera,
-        std::vector<std::unique_ptr<Shape>> objects,
-        std::vector<std::unique_ptr<LightSource>> lightSources,
+        const Camera& camera,
+        std::vector<std::shared_ptr<Shape>> objects,
+        std::vector<std::shared_ptr<LightSource>> lightSources,
         int nBounces,
         RenderMode renderMode);
   Scene(JsonObject sceneJson);
@@ -37,21 +38,7 @@ class Scene {
   Image render();
   Image renderBinary();
 
-  struct Intersection {
-    bool hit;
-    double t;
-    Shape* shapeHit;
-  };
-
-  Intersection checkIntersection(Ray ray, double t) const {
-    for (int i = 0; i < objects.size(); i++) {
-      Shape *shape = objects[i].get();
-      if (shape->checkIntersection(ray, t)) {
-        return {true, t, shape};
-      }
-    }
-    return {false, t, nullptr};
-  }
+  std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray& ray) const;
 };
 
 #endif //CGRAYTRACER_SCENE_H
