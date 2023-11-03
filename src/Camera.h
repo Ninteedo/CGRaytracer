@@ -43,7 +43,7 @@ class Camera {
   [[nodiscard]] int getWidth() const;
   [[nodiscard]] int getHeight() const;
 
-  [[nodiscard]] Ray getRay(double x, double y) const;
+  [[nodiscard]] Ray getRay(double x, double y, double xOffset = 0.5, double yOffset = 0.5) const;
 };
 
 #endif //CGRAYTRACER_CAMERA_H

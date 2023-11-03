@@ -27,13 +27,13 @@ Camera::Camera(const Vector3D &position,
 }
 
 Camera::Camera(JsonObject json)
-    : position(Vector3D(json["position"].asArray())),
-      lookAt(Vector3D(json["lookAt"].asArray())),
-      upVector(Vector3D(json["upVector"].asArray())),
-      fieldOfView(json["fov"].asDouble()),
-      exposure(json["exposure"].asDouble()),
-      width(json["width"].asInt()),
-      height(json["height"].asInt()) {}
+    : Camera(Vector3D(json["position"].asArray()),
+             Vector3D(json["lookAt"].asArray()),
+             Vector3D(json["upVector"].asArray()),
+             json["fov"].asDouble(),
+             json["exposure"].asDouble(),
+             json["width"].asInt(),
+             json["height"].asInt()) {}
 
 Camera::~Camera() = default;
 
@@ -60,10 +60,10 @@ int Camera::getWidth() const { return width; }
 
 int Camera::getHeight() const { return height; }
 
-Ray Camera::getRay(double x, double y) const {
+Ray Camera::getRay(double x, double y, double xOffset, double yOffset) const {
   // Step 3: Calculate direction of the ray for pixel (x, y)
-  double xNDC = (2 * x) / width - 1;
-  double yNDC = 1 - (2 * y) / height;
+  double xNDC = (2 * (x + xOffset)) / width - 1;
+  double yNDC = 1 - (2 * (y + yOffset)) / height;
   double Px = xNDC * viewPlaneWidth / 2.0;
   double Py = yNDC * viewPlaneHeight / 2.0;
   Vector3D rayDirection = (-w + u * Px + v * Py).normalize(); // Normalize the direction
