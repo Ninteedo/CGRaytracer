@@ -20,7 +20,7 @@ class Scene {
   RenderMode renderMode;
   Camera camera;
   Colour colour;
-  std::vector<std::shared_ptr<Shape>> objects;
+  std::vector<std::shared_ptr<Shape>> shapes;
   std::vector<std::shared_ptr<LightSource>> lightSources;
  public:
   Scene(Colour colour,

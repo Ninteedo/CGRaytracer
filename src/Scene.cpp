@@ -10,7 +10,7 @@ Scene::Scene(Colour colour,
              RenderMode renderMode)
     : colour(std::move(colour)),
       camera(camera),
-      objects(std::move(objects)),
+      shapes(std::move(objects)),
       lightSources(std::move(lightSources)),
       nBounces(nBounces),
       renderMode(renderMode) {}
@@ -34,7 +34,7 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
   }
   JsonArray objectsJson = sceneObject["shapes"].asArray();
   for (const auto &i : objectsJson) {
-    objects.push_back(Shape::fromJson(i.asObject()));
+    shapes.push_back(Shape::fromJson(i.asObject()));
   }
 }
 
@@ -79,7 +79,7 @@ Image Scene::renderBinary() {
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {
   std::shared_ptr<Shape> closestShape = nullptr;
   double closestT = 0;
-  for (const auto &shape : objects) {
+  for (const auto &shape : shapes) {
     std::optional<double> t = shape->checkIntersection(ray);
     if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
       closestShape = shape;
