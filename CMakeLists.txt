@@ -29,7 +29,10 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/Scene.cpp
         src/Cuboid.cpp
         src/LightSource.cpp
-        src/PointLight.cpp)
+        src/PointLight.cpp
+        src/Camera.cpp
+        src/PinholeCamera.cpp
+        src/PinholeCamera.h)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CGRaytracer PROPERTY CXX_STANDARD 20)

@@ -6,7 +6,7 @@
 
 class Vector3D {
  private:
-  const double x, y, z;
+  double x, y, z;
 
  public:
   // Default constructor

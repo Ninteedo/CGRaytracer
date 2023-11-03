@@ -6,6 +6,6 @@ std::unique_ptr<LightSource> LightSource::fromJson(JsonObject json) {
   if (type == "pointlight") {
     return std::make_unique<PointLight>(json);
   } else {
-    throw std::runtime_error("Unknown object type: " + type);
+    throw std::runtime_error("Unknown light source type: " + type);
   }
 }

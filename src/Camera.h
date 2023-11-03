@@ -1,6 +1,7 @@
 #ifndef CGRAYTRACER_CAMERA_H
 #define CGRAYTRACER_CAMERA_H
 
+#include <memory>
 #include "Vector3D.h"
 #include "JSONParser.h"
 
@@ -22,8 +23,10 @@ class Camera {
          double exposure,
          int width,
          int height);
-  Camera(JsonObject cameraJson);
+  explicit Camera(JsonObject cameraJson);
   ~Camera();
+
+  std::unique_ptr<Camera> fromJson(JsonObject json);
 };
 
 #endif //CGRAYTRACER_CAMERA_H

@@ -16,12 +16,12 @@ enum RenderMode {
 
 class Scene {
  private:
-  Colour colour;
-  Camera camera;
-  std::vector<Object> objects;
-  std::vector<LightSource> lightSources;
   int nBounces;
   RenderMode renderMode;
+  Camera camera;
+  Colour colour;
+  std::vector<std::unique_ptr<Object>> objects;
+  std::vector<std::unique_ptr<LightSource>> lightSources;
  public:
   Scene(Colour colour,
         Camera camera,
