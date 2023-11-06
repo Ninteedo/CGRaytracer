@@ -21,13 +21,11 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/shapes/Sphere.h
         src/shapes/Cylinder.h
         src/shapes/Triangle.h
-        src/shapes/Cuboid.h
         src/PointLight.h
         src/shapes/Sphere.cpp
         src/shapes/Shape.cpp
         src/Material.cpp
         src/Scene.cpp
-        src/shapes/Cuboid.cpp
         src/LightSource.cpp
         src/PointLight.cpp
         src/Camera.cpp

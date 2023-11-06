@@ -1,5 +1,4 @@
 #include "Shape.h"
-#include "Cuboid.h"
 #include "Cylinder.h"
 #include "Sphere.h"
 #include "Triangle.h"
@@ -14,8 +13,6 @@ std::shared_ptr<Shape> Shape::fromJson(JsonObject json) {
     return std::make_unique<Triangle>(json);
   } else if (type == "cylinder") {
     return std::make_unique<Cylinder>(json);
-//  } else if (type == "cuboid") {
-//    return std::make_unique<Cuboid>(json);
   } else {
     throw std::runtime_error("Unknown object type: " + type);
   }
