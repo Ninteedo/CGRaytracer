@@ -83,39 +83,44 @@ Image Scene::renderBinary() {
 Image Scene::renderShaded() {
   Image image(camera.getWidth(), camera.getHeight());
 
+  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleShaded(r); };
+
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
-      image.setColor(x, y, sampleShaded(x, y, 8));
+      image.setColor(x, y, sample(x, y, 8, colourSampler));
     }
   }
   return image;
 }
 
-Colour Scene::sampleShaded(unsigned int x, unsigned int y, int nSamples) {
+Colour Scene::sample(unsigned int x,
+                     unsigned int y,
+                     int nSamples,
+                     const std::function<Colour(const Scene &, const Ray &)> &sampleFunction) {
   Colour pixelColour;
-  std::uniform_real_distribution<double> distribution(0, 1);
+  double scale = 1.0 / nSamples;
   for (int i = 0; i < nSamples; i++) {
     double xOffset = random_double();
     double yOffset = random_double();
     Ray ray = camera.getRay(x, y, xOffset, yOffset);
-    std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
-
-    Colour rayColour;
-    if (intersection.has_value()) {
-      Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
-
-      // Taking modulus of negative values
-      double r = std::fabs(normal.getX());
-      double g = std::fabs(normal.getY());
-      double b = std::fabs(normal.getZ());
-
-      rayColour = Colour(r, g, b);
-    } else {
-      rayColour = colour;
-    }
-    pixelColour += rayColour;
+    pixelColour += sampleFunction(*this, ray) * scale;
   }
-  return Colour(pixelColour / (double) nSamples);
+  return pixelColour;
+}
+
+Colour Scene::sampleShaded(const Ray &ray) {
+  std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
+  
+  if (!intersection.has_value()) return colour;
+
+  Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
+
+  // Taking absolute of negative values
+  double r = std::fabs(normal.getX());
+  double g = std::fabs(normal.getY());
+  double b = std::fabs(normal.getZ());
+
+  return Colour(r, g, b);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {
