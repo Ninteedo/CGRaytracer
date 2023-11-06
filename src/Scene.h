@@ -8,6 +8,7 @@
 #include "LightSource.h"
 #include "Camera.h"
 #include "Image.h"
+#include <random>
 
 enum RenderMode {
   BINARY,
@@ -38,6 +39,8 @@ class Scene {
   Image render();
   Image renderBinary();
   Image renderShaded();
+
+  Colour sampleShaded(unsigned int x, unsigned int y, int nSamples);
 
   [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray) const;
 };

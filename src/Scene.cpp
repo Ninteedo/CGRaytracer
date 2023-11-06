@@ -1,7 +1,10 @@
 #include "Scene.h"
+#include "Utility.cpp"
 
 #include <utility>
 #include <cmath>
+#include <random>
+#include <iostream>
 
 Scene::Scene(Colour colour,
              const Camera &camera,
@@ -82,27 +85,37 @@ Image Scene::renderShaded() {
 
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
-      Ray ray = camera.getRay(x, y);
-      std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
-
-      Colour pixelColour;
-      if (intersection.has_value()) {
-        Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
-
-        // Taking modulus of negative values
-        double r = std::fabs(normal.getX());
-        double g = std::fabs(normal.getY());
-        double b = std::fabs(normal.getZ());
-
-        pixelColour = Colour(r, g, b);
-      } else {
-        pixelColour = colour;
-      }
-
-      image.setColor(x, y, pixelColour);
+      image.setColor(x, y, sampleShaded(x, y, 8));
     }
   }
   return image;
+}
+
+Colour Scene::sampleShaded(unsigned int x, unsigned int y, int nSamples) {
+  Colour pixelColour;
+  std::uniform_real_distribution<double> distribution(0, 1);
+  for (int i = 0; i < nSamples; i++) {
+    double xOffset = random_double();
+    double yOffset = random_double();
+    Ray ray = camera.getRay(x, y, xOffset, yOffset);
+    std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
+
+    Colour rayColour;
+    if (intersection.has_value()) {
+      Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
+
+      // Taking modulus of negative values
+      double r = std::fabs(normal.getX());
+      double g = std::fabs(normal.getY());
+      double b = std::fabs(normal.getZ());
+
+      rayColour = Colour(r, g, b);
+    } else {
+      rayColour = colour;
+    }
+    pixelColour += rayColour;
+  }
+  return Colour(pixelColour / (double) nSamples);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {

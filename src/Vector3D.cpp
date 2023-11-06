@@ -45,6 +45,14 @@ Vector3D Vector3D::operator/(double val) const {
   return {x / val, y / val, z / val};
 }
 
+Vector3D Vector3D::operator+=(const Vector3D &v) {
+  x += v.x;
+  y += v.y;
+  z += v.z;
+
+  return *this;
+}
+
 double Vector3D::dot(const Vector3D &v) const {
   return x * v.x + y * v.y + z * v.z;
 }
@@ -68,4 +76,9 @@ Vector3D Vector3D::normalize() const {
 
 void Vector3D::print() const {
   std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
+}
+
+std::ostream& operator<<(std::ostream &os, const Vector3D& v) {
+  os << "(" << v.getX() << ", " << v.getY() << ", " << v.getZ() << ")";
+  return os;
 }

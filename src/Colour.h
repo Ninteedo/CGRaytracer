@@ -11,6 +11,8 @@ class Colour : public Vector3D {
 
   explicit Colour(JsonArray json);
 
+  explicit Colour(const Vector3D &v);
+
   [[nodiscard]] double red() const;
   [[nodiscard]] double green() const;
   [[nodiscard]] double blue() const;

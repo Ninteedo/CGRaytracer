@@ -46,6 +46,8 @@ class Vector3D {
   // Division
   Vector3D operator/(double val) const;
 
+  Vector3D operator+=(const Vector3D &v);
+
   // Dot product
   [[nodiscard]] double dot(const Vector3D &v) const;
 
@@ -64,5 +66,7 @@ class Vector3D {
   // Print vector
   void print() const;
 };
+
+std::ostream& operator<<(std::ostream &os, const Vector3D& v);
 
 #endif // VECTOR3D_H
