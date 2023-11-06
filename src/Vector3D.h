@@ -3,6 +3,7 @@
 #define VECTOR3D_H
 
 #include "JSONParser.h"
+#include "Utility.h"
 
 class Vector3D {
  private:
@@ -43,6 +44,8 @@ class Vector3D {
   // Multiplication
   Vector3D operator*(double val) const;
 
+  Vector3D operator*(const Vector3D &v) const;
+
   // Division
   Vector3D operator/(double val) const;
 
@@ -65,6 +68,16 @@ class Vector3D {
 
   // Print vector
   void print() const;
+
+  static Vector3D random();
+
+  static Vector3D random(double min, double max);
+
+  static Vector3D randomInUnitSphere();
+
+  static Vector3D randomUnitVector();
+
+  [[nodiscard]] Vector3D randomInHemisphere() const;
 };
 
 std::ostream& operator<<(std::ostream &os, const Vector3D& v);

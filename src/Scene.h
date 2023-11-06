@@ -22,7 +22,7 @@ class Scene {
   int nBounces;
   RenderMode renderMode;
   Camera camera;
-  Colour colour;
+  Colour backgroundColour;
   std::vector<std::shared_ptr<Shape>> shapes;
   std::vector<std::shared_ptr<LightSource>> lightSources;
  public:
@@ -41,9 +41,11 @@ class Scene {
   Image renderBinary();
   Image renderShaded();
 
-  Colour sample(unsigned int x, unsigned int y, int nSamples, const std::function<Colour(const Scene &, const Ray &)>& sampleFunction);
+  Colour sample(unsigned int x, unsigned int y, int nSamples, const std::function<Colour(const Scene &,
+                                                                                         const Ray &)> &sampleFunction);
 
-  Colour sampleShaded(const Ray& ray);
+  Colour sampleShaded(const Ray &ray, int depth = 0);
+  Colour sampleDiffuse(const Ray &ray, int depth = 0);
 
   [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray) const;
 };

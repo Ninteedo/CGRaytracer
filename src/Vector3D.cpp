@@ -41,6 +41,10 @@ Vector3D Vector3D::operator*(double val) const {
   return {x * val, y * val, z * val};
 }
 
+Vector3D Vector3D::operator*(const Vector3D &v) const {
+  return {x * v.x, y * v.y, z * v.z};
+}
+
 Vector3D Vector3D::operator/(double val) const {
   return {x / val, y / val, z / val};
 }
@@ -78,7 +82,36 @@ void Vector3D::print() const {
   std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
 }
 
-std::ostream& operator<<(std::ostream &os, const Vector3D& v) {
+Vector3D Vector3D::random() {
+  return {random_double(), random_double(), random_double()};
+}
+
+Vector3D Vector3D::random(double min, double max) {
+  return {random_double(min, max), random_double(min, max), random_double(min, max)};
+}
+
+Vector3D Vector3D::randomInUnitSphere() {
+  while (true) {
+    Vector3D p = Vector3D::random(-1, 1);
+    if (p.magnitudeSquared() >= 1) continue;
+    return p;
+  }
+}
+
+Vector3D Vector3D::randomUnitVector() {
+  return randomInUnitSphere().normalize();
+}
+
+Vector3D Vector3D::randomInHemisphere() const {
+  Vector3D inUnitSphere = randomInUnitSphere();
+  if (dot(inUnitSphere) > 0.0) {
+    return inUnitSphere;
+  } else {
+    return -inUnitSphere;
+  }
+}
+
+std::ostream &operator<<(std::ostream &os, const Vector3D &v) {
   os << "(" << v.getX() << ", " << v.getY() << ", " << v.getZ() << ")";
   return os;
 }

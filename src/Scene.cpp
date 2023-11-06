@@ -1,5 +1,5 @@
 #include "Scene.h"
-#include "Utility.cpp"
+#include "Utility.h"
 
 #include <utility>
 #include <cmath>
@@ -12,7 +12,7 @@ Scene::Scene(Colour colour,
              std::vector<std::shared_ptr<LightSource>> lightSources,
              int nBounces,
              RenderMode renderMode)
-    : colour(std::move(colour)),
+    : backgroundColour(std::move(colour)),
       camera(camera),
       shapes(std::move(objects)),
       lightSources(std::move(lightSources)),
@@ -31,7 +31,7 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
     throw std::runtime_error("Invalid render mode");
   }
   JsonObject sceneObject = json["scene"].asObject();
-  colour = Colour(sceneObject["backgroundcolor"].asArray());
+  backgroundColour = Colour(sceneObject["backgroundcolor"].asArray());
   JsonArray lightsJson = sceneObject["lightsources"].asArray();
   for (const auto &i : lightsJson) {
     lightSources.push_back(LightSource::fromJson(i.asObject()));
@@ -71,7 +71,7 @@ Image Scene::renderBinary() {
       if (intersection.has_value()) {
         pixelColour = intersection.value().first->getMaterial().getDiffuseColour();
       } else {
-        pixelColour = colour;
+        pixelColour = backgroundColour;
       }
 
       image.setColor(x, y, pixelColour);
@@ -83,7 +83,7 @@ Image Scene::renderBinary() {
 Image Scene::renderShaded() {
   Image image(camera.getWidth(), camera.getHeight());
 
-  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleShaded(r); };
+  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuse(r); };
 
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
@@ -108,10 +108,10 @@ Colour Scene::sample(unsigned int x,
   return pixelColour;
 }
 
-Colour Scene::sampleShaded(const Ray &ray) {
+Colour Scene::sampleShaded(const Ray &ray, int depth) {
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
-  
-  if (!intersection.has_value()) return colour;
+
+  if (!intersection.has_value()) return backgroundColour;
 
   Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
 
@@ -121,6 +121,36 @@ Colour Scene::sampleShaded(const Ray &ray) {
   double b = std::fabs(normal.getZ());
 
   return Colour(r, g, b);
+}
+
+Colour Scene::sampleDiffuse(const Ray &ray, int depth) {
+  // Base case: if we've reached the maximum number of bounces, return black
+  if (depth >= nBounces) return Colour();
+
+  // Check if the ray intersects with any objects in the scene
+  std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
+
+  // If the ray doesn't intersect with anything, return the background backgroundColour
+  if (!intersection.has_value()) return backgroundColour;
+
+  // Get the normal of the surface at the intersection point
+  Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
+
+  // Get a random direction in the hemisphere of the normal
+  Vector3D bounceDirection = normal.randomInHemisphere();
+
+  // Create a new ray starting at the intersection point and going in the bounce direction
+  Ray bounceRay = Ray(ray.at(intersection.value().second), bounceDirection);
+
+  // Get the diffuse factor and backgroundColour of the object
+  double diffuseFactor = intersection.value().first->getMaterial().getKd();
+  Colour diffuseColour = intersection.value().first->getMaterial().getDiffuseColour();
+
+  // Calculate the backgroundColour of the bounce ray
+  Colour bounceColour = sampleDiffuse(bounceRay, depth + 1);
+
+  // Return the backgroundColour of the bounce ray multiplied by the diffuse factor and backgroundColour
+  return Colour(diffuseColour * bounceColour * diffuseFactor);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {
