@@ -17,6 +17,8 @@ class Interval {
   [[nodiscard]] bool contains(double val) const;
 
   [[nodiscard]] bool surrounds(double val) const;
+
+  [[nodiscard]] double clamp(double val) const;
 };
 
 const static Interval EMPTY_INTERVAL = Interval(std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity());
