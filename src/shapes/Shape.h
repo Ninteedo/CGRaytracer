@@ -4,6 +4,7 @@
 
 #include "../Material.h"
 #include "../Ray.h"
+#include "../Interval.h"
 #include <memory>
 #include <optional>
 
@@ -20,7 +21,7 @@ class Shape {
 
   Material getMaterial() const;
 
-  [[nodiscard]] virtual std::optional<double> checkIntersection(Ray ray) const = 0;
+  [[nodiscard]] virtual std::optional<double> checkIntersection(Ray ray, Interval interval) const = 0;
 
   [[nodiscard]] virtual Vector3D getSurfaceNormal(Vector3D point) const = 0;
 };

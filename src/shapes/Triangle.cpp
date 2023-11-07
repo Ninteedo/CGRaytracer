@@ -1,4 +1,5 @@
 #include "Triangle.h"
+#include "../Interval.h"
 
 Triangle::Triangle(const Vector3D& v0, const Vector3D& v1, const Vector3D& v2, const Material& material)
     : v0(v0), v1(v1), v2(v2), Shape(material) {}
@@ -11,7 +12,7 @@ Triangle::Triangle(JsonObject json)
     Material(json["material"].asObject())
 ) {}
 
-std::optional<double> Triangle::checkIntersection(const Ray ray) const {
+std::optional<double> Triangle::checkIntersection(Ray ray, Interval interval) const {
   Vector3D e1 = v1 - v0;
   Vector3D e2 = v2 - v0;
   Vector3D h = ray.getDirection().cross(e2);
@@ -31,7 +32,7 @@ std::optional<double> Triangle::checkIntersection(const Ray ray) const {
     return std::nullopt;
   }
   double t0 = f * e2.dot(q);
-  if (t0 > 0.00001) {
+  if (interval.contains(t0)) {
     return t0;
   }
   return std::nullopt;

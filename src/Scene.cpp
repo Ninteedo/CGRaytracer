@@ -159,7 +159,7 @@ std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersectio
   std::shared_ptr<Shape> closestShape = nullptr;
   double closestT = 0;
   for (const auto &shape : shapes) {
-    std::optional<double> t = shape->checkIntersection(ray);
+    std::optional<double> t = shape->checkIntersection(ray, POSITIVE_INTERVAL);
     if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
       closestShape = shape;
       closestT = t.value();

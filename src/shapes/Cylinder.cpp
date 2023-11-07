@@ -1,5 +1,6 @@
 #include <cmath>
 #include "Cylinder.h"
+#include "../Interval.h"
 
 Cylinder::Cylinder(const Vector3D &centre, const Vector3D &axis, double radius, double height,
                    const Material &material)
@@ -15,23 +16,48 @@ Cylinder::Cylinder(JsonObject json)
     Material(json["material"].asObject())
 ) {}
 
-std::optional<double> Cylinder::checkIntersection(const Ray ray) const {
+std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) const {
   Vector3D oc = ray.getOrigin() - centre;
-  double a = ray.getDirection().dot(ray.getDirection()) - pow(ray.getDirection().dot(axis), 2);
-  double b = 2.0 * (oc.dot(ray.getDirection()) - oc.dot(axis) * ray.getDirection().dot(axis));
-  double c = oc.dot(oc) - pow(oc.dot(axis), 2) - radius * radius;
+  Vector3D d = ray.getDirection();
+  Vector3D axisDir = axis; // Ensure this is a unit vector
+  double radiusSq = radius * radius;
+
+  // Coefficients for the quadratic equation at^2 + bt + c = 0
+  double a = d.cross(axisDir).magnitudeSquared();
+  double b = 2.0 * (d.cross(axisDir)).dot(oc.cross(axisDir));
+  double c = oc.cross(axisDir).magnitudeSquared() - radiusSq;
+
+  // Solve the quadratic equation for t
   double discriminant = b * b - 4 * a * c;
 
-  if (discriminant >= 0) {
-    double t1 = (-b - sqrt(discriminant)) / (2.0 * a);
-    double t2 = (-b + sqrt(discriminant)) / (2.0 * a);
+  if (discriminant < 0) {
+    return std::nullopt; // No intersection, the discriminant is negative.
+  }
 
-    double t = (t1 > 0.00001) ? t1 : t2;
-    if (t > 0.00001 && t < height) {
-      return t;
+  // Compute the two points of intersection t1 and t2
+  double t0 = (-b - sqrt(discriminant)) / (2.0 * a);
+  double t1 = (-b + sqrt(discriminant)) / (2.0 * a);
+
+  // Check each intersection point for validity
+  std::optional<double> result = std::nullopt;
+  for (double t : {t0, t1}) {
+    if (!interval.contains(t)) continue;
+
+    // Check the height bounds
+    Vector3D intersectionPoint = ray.getOrigin() + ray.getDirection() * t;
+    Vector3D baseToIntersection = intersectionPoint - centre;
+    double heightAlongAxis = baseToIntersection.dot(axisDir);
+
+    if (heightAlongAxis < 0 || heightAlongAxis > this->height) continue; // Outside the height bounds of the cylinder
+
+    // If we reach this point, the intersection is valid.
+    // You can either choose to return the first valid t or choose the smallest positive t.
+    if (!result || t < result) {
+      result = t;
     }
   }
-  return std::nullopt;
+
+  return result;
 }
 
 Vector3D Cylinder::getSurfaceNormal(Vector3D point) const {

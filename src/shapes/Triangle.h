@@ -15,7 +15,7 @@ class Triangle : public Shape {
   Triangle(const Vector3D& v0, const Vector3D& v1, const Vector3D& v2, const Material& material);
   explicit Triangle(JsonObject json);
 
-  [[nodiscard]] std::optional<double> checkIntersection(Ray ray) const override;
+  [[nodiscard]] std::optional<double> checkIntersection(Ray ray, Interval interval) const override;
 
   [[nodiscard]] Vector3D getSurfaceNormal(Vector3D point) const override;
 };

@@ -4,6 +4,7 @@
 
 #include "../Vector3D.h"
 #include "Shape.h"
+#include "../Interval.h"
 
 class Sphere : public Shape {
  private:
@@ -13,7 +14,7 @@ class Sphere : public Shape {
   Sphere(const Vector3D& centre, double radius, const Material& material);
   explicit Sphere(JsonObject json);
 
-  [[nodiscard]] std::optional<double> checkIntersection(Ray ray) const override;
+  [[nodiscard]] std::optional<double> checkIntersection(Ray ray, Interval interval) const override;
 
   [[nodiscard]] Vector3D getSurfaceNormal(Vector3D point) const override;
 };

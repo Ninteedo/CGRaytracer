@@ -11,7 +11,7 @@ Sphere::Sphere(JsonObject json)
     Material(json["material"].asObject())
 ) {}
 
-std::optional<double> Sphere::checkIntersection(const Ray ray) const {
+std::optional<double> Sphere::checkIntersection(Ray ray, Interval interval) const {
   Vector3D oc = ray.getOrigin() - centre;
   double a = ray.getDirection().magnitudeSquared();
   double half_b = oc.dot(ray.getDirection());
@@ -19,7 +19,14 @@ std::optional<double> Sphere::checkIntersection(const Ray ray) const {
   double discriminant = half_b * half_b - a * c;
 
   if (discriminant >= 0) {
-    return (-half_b - sqrt(discriminant)) / a;
+    double root1 = (-half_b - sqrt(discriminant)) / a;
+    double root2 = (-half_b + sqrt(discriminant)) / a;
+
+    if (interval.contains(root1)) {
+      return root1;
+    } else if (interval.contains(root2)) {
+      return root2;
+    }
   }
   return std::nullopt;
 }

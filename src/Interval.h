@@ -23,5 +23,6 @@ class Interval {
 
 const static Interval EMPTY_INTERVAL = Interval(std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity());
 const static Interval UNIVERSE_INTERVAL = Interval(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+const static Interval POSITIVE_INTERVAL = Interval(0.000001, std::numeric_limits<double>::infinity());
 
 #endif //CGRAYTRACER_SRC_INTERVAL_H_
