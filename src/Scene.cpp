@@ -49,7 +49,7 @@ Scene Scene::loadFromFile(const std::string &filename) {
 
 Image Scene::render() {
   if (renderMode == BINARY) {
-    return renderShaded();
+    return renderBinary();
   } else if (renderMode == PHONG) {
     return renderBlinnPhong();
 //  } else if (renderMode == PATHTRACER) {
@@ -260,7 +260,16 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
     }
   }
 
-  Colour colour = Colour(ambientColour + diffuseSpecularSum);
+  // Reflectivity and refraction
+  Colour reflectColour = Colour();
+  if (material.getIsReflective()) {
+    Vector3D reflectDir = ray.getDirection().reflect(normal).normalize();
+    Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
+    Colour reflectSample = sampleBlinnPhong(reflectRay, depth + 1);
+    reflectColour = Colour(reflectSample * material.getReflectivity());
+  }
+
+  Colour colour = Colour(ambientColour + diffuseSpecularSum + reflectColour);
 
   // Clamp colour values to ensure they are within the valid range
   colour = colour.clamp();
