@@ -232,8 +232,8 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   Material material = hitShape->getMaterial();
 
   // Initialize the colour with ambient light if defined, otherwise black
-  Colour ambientIntensity = Colour(0.1, 0.1, 0.1);
-  Colour ambientColour = Colour(ambientIntensity * material.getKd());
+  Colour ambientIntensity = Colour(0.3, 0.3, 0.3);
+  Colour ambientColour = Colour(ambientIntensity * material.getDiffuseColour());
 
   Colour diffuseSpecularSum = Colour();
 
