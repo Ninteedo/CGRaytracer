@@ -23,6 +23,8 @@ class Colour : public Vector3D {
   [[nodiscard]] int getBlue() const;
 
   [[nodiscard]] std::string toPPM() const;
+
+  [[nodiscard]] Colour clamp() const;
 };
 
 inline double linear_to_gamma(double val);

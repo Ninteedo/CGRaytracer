@@ -40,6 +40,7 @@ class Scene {
   Image render();
   Image renderBinary();
   Image renderShaded();
+  Image renderBlinnPhong();
 
   Colour sample(unsigned int x, unsigned int y, int nSamples, const std::function<Colour(const Scene &,
                                                                                          const Ray &)> &sampleFunction);
@@ -47,10 +48,14 @@ class Scene {
   Colour sampleShaded(const Ray &ray, int depth = 0);
   Colour sampleDiffuse(const Ray &ray, int depth = 0);
   Colour sampleDiffuseAndSpecular(const Ray &ray, int depth = 0);
+  Colour sampleBlinnPhong(const Ray &ray, int depth = 0);
 
-  [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray) const;
+  [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray,
+                                                                                           Interval interval = POSITIVE_INTERVAL) const;
 
-  void printProgress(unsigned int current, unsigned int total) const;
+  bool isInShadow(const Vector3D &point, const LightSource &light) const;
+
+  static void printProgress(unsigned int current, unsigned int total) ;
 
 };
 

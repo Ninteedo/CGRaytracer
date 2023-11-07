@@ -47,7 +47,7 @@ using namespace std;
 // }
 
 int main() {
-  std::string sceneFilename = "scene.json";
+  std::string sceneFilename = "simple_phong.json";
 
   Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
 

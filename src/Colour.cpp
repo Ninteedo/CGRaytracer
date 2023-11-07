@@ -1,6 +1,7 @@
 #include "Colour.h"
 
 #include <utility>
+#include <algorithm>
 
 Colour::Colour(double red, double green, double blue) : Vector3D(red, green, blue) {}
 
@@ -36,6 +37,12 @@ std::string Colour::toPPM() const {
   return std::to_string(linear_to_gamma(getRed())) + " "
       + std::to_string(linear_to_gamma(getGreen())) + " "
       + std::to_string(linear_to_gamma(getBlue()));
+}
+
+Colour Colour::clamp() const {
+  return Colour(std::clamp(red(), 0.0, 1.0),
+                std::clamp(green(), 0.0, 1.0),
+                std::clamp(blue(), 0.0, 1.0));
 }
 
 inline double linear_to_gamma(double val) {

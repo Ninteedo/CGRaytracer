@@ -21,7 +21,7 @@
 - [ ] Shadows handling
 - [ ] Reflections handling
 - [ ] Refraction handling
-- [ ] Anti-aliasing
+- [x] Anti-aliasing
 - [ ] Depth of field
 - [ ] Texture mapping
 - [ ] Global illumination

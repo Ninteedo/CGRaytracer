@@ -50,8 +50,8 @@ Scene Scene::loadFromFile(const std::string &filename) {
 Image Scene::render() {
   if (renderMode == BINARY) {
     return renderShaded();
-//  } else if (renderMode == PHONG) {
-//    return renderPhong();
+  } else if (renderMode == PHONG) {
+    return renderBlinnPhong();
 //  } else if (renderMode == PATHTRACER) {
 //    return renderPathtracer();
   } else {
@@ -84,6 +84,21 @@ Image Scene::renderShaded() {
   Image image(camera.getWidth(), camera.getHeight());
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuseAndSpecular(r); };
+
+  for (unsigned int y = 0; y < camera.getHeight(); y++) {
+    printProgress(y, camera.getHeight());
+    for (unsigned int x = 0; x < camera.getWidth(); x++) {
+      image.setColor(x, y, sample(x, y, 8, colourSampler));
+    }
+  }
+  printProgress(camera.getHeight(), camera.getHeight());
+  return image;
+}
+
+Image Scene::renderBlinnPhong() {
+  Image image(camera.getWidth(), camera.getHeight());
+
+  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleBlinnPhong(r); };
 
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     printProgress(y, camera.getHeight());
@@ -176,7 +191,7 @@ Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
   colour += bounceColour * material.getKd() * diffuseColour;
 
   // Compute the specular component for each light source
-  for (const auto& lightSource : lightSources) {
+  for (const auto &lightSource : lightSources) {
     Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
     Vector3D reflectionDir = (-lightDir).reflect(normal).normalize();
     Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
@@ -190,7 +205,7 @@ Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
   // Reflectivity
   if (material.getIsReflective()) {
     Vector3D reflectDirection = ray.getDirection().reflect(normal);
-    Ray reflectRay(hitPoint + reflectDirection, reflectDirection);
+    Ray reflectRay(hitPoint, reflectDirection);
     Colour reflectColour = sampleDiffuseAndSpecular(reflectRay, depth + 1);
     colour += reflectColour * material.getReflectivity();
   }
@@ -198,11 +213,74 @@ Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
   return colour;
 }
 
-std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {
+Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
+  // Base case: if we've reached the maximum number of bounces, return the background color
+  if (depth >= nBounces) return backgroundColour;
+
+  // Check if the ray intersects with any objects in the scene
+  std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
+
+  // If the ray doesn't intersect with anything, return the background color
+  if (!intersection.has_value()) return backgroundColour;
+
+  // Unpack the intersection data
+  auto [hitShape, hitDistance] = intersection.value();
+  Vector3D hitPoint = ray.at(hitDistance);
+  Vector3D normal = hitShape->getSurfaceNormal(hitPoint).normalize();
+  Material material = hitShape->getMaterial();
+
+  // Initialize the color with ambient light if defined, otherwise black
+  Colour ambientColour = Colour();
+  Colour colour = Colour(ambientColour * material.getKd());
+
+  // Diffuse and specular calculations for each light source
+  for (const auto &lightSource : lightSources) {
+    Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
+    Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
+    Vector3D halfDir = (lightDir + viewDir).normalize();
+
+    // Check for shadow
+    if (!isInShadow(hitPoint, *lightSource)) {
+      // Diffuse term
+      double diff = std::max(lightDir.dot(normal), 0.0);
+      Colour diffuseColour = Colour(lightSource->getIntensity() * diff * material.getDiffuseColour());
+
+      // Blinn-Phong specular term
+      double spec = std::pow(std::max(halfDir.dot(normal), 0.0), material.getSpecularExponent());
+      Colour specularColour = Colour(lightSource->getIntensity() * spec * material.getSpecularColour());
+
+      colour += diffuseColour * material.getKd() + specularColour * material.getKs();
+    }
+  }
+
+  // Reflectivity and refraction
+  if (material.getIsReflective()) {
+    Vector3D reflectDir = ray.getDirection().reflect(normal).normalize();
+    Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
+    Colour reflectColour = sampleBlinnPhong(reflectRay, depth + 1);
+    colour += reflectColour * material.getReflectivity();
+  }
+
+  // Clamp color values to ensure they are within the valid range
+  colour = colour.clamp();
+
+  return colour;
+}
+
+bool Scene::isInShadow(const Vector3D &point, const LightSource &light) const {
+  Vector3D lightDir = (light.getPosition() - point).normalize();
+  Ray shadowRay(point, lightDir);
+  Interval interval = Interval(0.0001, (light.getPosition() - point).magnitude());
+  std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(shadowRay, interval);
+  return intersection.has_value();
+}
+
+std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray,
+                                                                                  Interval interval) const {
   std::shared_ptr<Shape> closestShape = nullptr;
   double closestT = 0;
   for (const auto &shape : shapes) {
-    std::optional<double> t = shape->checkIntersection(ray, POSITIVE_INTERVAL);
+    std::optional<double> t = shape->checkIntersection(ray, interval);
     if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
       closestShape = shape;
       closestT = t.value();
@@ -216,7 +294,7 @@ std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersectio
 }
 
 // Print the progress as a percentage as a whole number
-void Scene::printProgress(unsigned int current, unsigned int total) const {
+void Scene::printProgress(unsigned int current, unsigned int total) {
   int progress = (int) (100.0 * current / total);
   std::cout << "\rRendering: " << progress << "% complete" << std::flush;
 }
