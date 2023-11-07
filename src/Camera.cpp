@@ -62,7 +62,7 @@ int Camera::getHeight() const { return height; }
 
 Ray Camera::getRay(double x, double y, double xOffset, double yOffset) const {
   // Step 3: Calculate direction of the ray for pixel (x, y)
-  double xNDC = (2 * (x + xOffset)) / width - 1;
+  double xNDC = 1 - ((2 * (x + xOffset)) / (width - 1));
   double yNDC = 1 - (2 * (y + yOffset)) / height;
   double Px = xNDC * viewPlaneWidth / 2.0;
   double Py = yNDC * viewPlaneHeight / 2.0;
