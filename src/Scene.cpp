@@ -127,7 +127,7 @@ Colour Scene::sampleShaded(const Ray &ray, int depth) {
 
 Colour Scene::sampleDiffuse(const Ray &ray, int depth) {
   // Base case: if we've reached the maximum number of bounces, return black
-  if (depth >= nBounces) return Colour();
+  if (depth >= nBounces) return backgroundColour;
 
   // Check if the ray intersects with any objects in the scene
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
@@ -139,7 +139,7 @@ Colour Scene::sampleDiffuse(const Ray &ray, int depth) {
   Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
 
   // Get a random direction in the hemisphere of the normal
-  Vector3D bounceDirection = normal.randomInHemisphere();
+  Vector3D bounceDirection = normal + normal.randomInHemisphere();
 
   // Create a new ray starting at the intersection point and going in the bounce direction
   Ray bounceRay = Ray(ray.at(intersection.value().second), bounceDirection);
@@ -151,8 +151,7 @@ Colour Scene::sampleDiffuse(const Ray &ray, int depth) {
   // Calculate the backgroundColour of the bounce ray
   Colour bounceColour = sampleDiffuse(bounceRay, depth + 1);
 
-  // Return the backgroundColour of the bounce ray multiplied by the diffuse factor and backgroundColour
-  return Colour(diffuseColour * bounceColour * diffuseFactor);
+  return Colour(bounceColour * diffuseFactor * diffuseColour);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {
