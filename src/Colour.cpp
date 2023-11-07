@@ -8,7 +8,6 @@ Colour::Colour(JsonArray json) : Vector3D(std::move(json)) {}
 
 Colour::Colour(const Vector3D &v) : Colour(v.getX(), v.getY(), v.getZ()) {}
 
-
 double Colour::red() const {
   return getX();
 }
@@ -34,5 +33,11 @@ int Colour::getBlue() const {
 }
 
 std::string Colour::toPPM() const {
-  return std::to_string(getRed()) + " " + std::to_string(getGreen()) + " " + std::to_string(getBlue());
+  return std::to_string(linear_to_gamma(getRed())) + " "
+      + std::to_string(linear_to_gamma(getGreen())) + " "
+      + std::to_string(linear_to_gamma(getBlue()));
+}
+
+inline double linear_to_gamma(double val) {
+  return sqrt(val);
 }

@@ -3,6 +3,7 @@
 #define COLOUR_H
 
 #include <string>
+#include <cmath>
 #include "Vector3D.h"
 
 class Colour : public Vector3D {
@@ -23,5 +24,7 @@ class Colour : public Vector3D {
 
   [[nodiscard]] std::string toPPM() const;
 };
+
+inline double linear_to_gamma(double val);
 
 #endif // COLOUR_H
