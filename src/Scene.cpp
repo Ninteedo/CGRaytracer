@@ -86,10 +86,12 @@ Image Scene::renderShaded() {
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuse(r); };
 
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
+    printProgress(y, camera.getHeight());
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 8, colourSampler));
     }
   }
+  printProgress(camera.getHeight(), camera.getHeight());
   return image;
 }
 
@@ -168,4 +170,10 @@ std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersectio
   } else {
     return std::make_pair(closestShape, closestT);
   }
+}
+
+// Print the progress as a percentage as a whole number
+void Scene::printProgress(unsigned int current, unsigned int total) const {
+  int progress = (int) (100.0 * current / total);
+  std::cout << "\rRendering: " << progress << "% complete" << std::flush;
 }

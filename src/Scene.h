@@ -48,6 +48,8 @@ class Scene {
   Colour sampleDiffuse(const Ray &ray, int depth = 0);
 
   [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray) const;
+
+  void printProgress(unsigned int current, unsigned int total) const;
 };
 
 #endif //CGRAYTRACER_SCENE_H
