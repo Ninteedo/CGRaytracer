@@ -4,6 +4,10 @@
 
 // https://raytracing.github.io/books/RayTracingInOneWeekend.html#antialiasing/somerandomnumberutilities
 
+#include <limits>
+
+const static double EPSILON = std::numeric_limits<double>::epsilon();
+
 double degrees_to_radians(double degrees);
 
 // Returns a random real in [0,1).
