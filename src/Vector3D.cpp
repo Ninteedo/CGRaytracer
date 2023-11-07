@@ -111,6 +111,10 @@ Vector3D Vector3D::randomInHemisphere() const {
   }
 }
 
+Vector3D Vector3D::reflect(const Vector3D &normal) const {
+  return *this - normal * 2 * dot(normal);
+}
+
 std::ostream &operator<<(std::ostream &os, const Vector3D &v) {
   os << "(" << v.getX() << ", " << v.getY() << ", " << v.getZ() << ")";
   return os;

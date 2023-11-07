@@ -39,5 +39,6 @@ std::string Colour::toPPM() const {
 }
 
 inline double linear_to_gamma(double val) {
-  return sqrt(val);
+//  return sqrt(val);
+  return val;
 }

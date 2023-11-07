@@ -83,7 +83,7 @@ Image Scene::renderBinary() {
 Image Scene::renderShaded() {
   Image image(camera.getWidth(), camera.getHeight());
 
-  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuse(r); };
+  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuseAndSpecular(r); };
 
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     printProgress(y, camera.getHeight());
@@ -152,6 +152,50 @@ Colour Scene::sampleDiffuse(const Ray &ray, int depth) {
   Colour bounceColour = sampleDiffuse(bounceRay, depth + 1);
 
   return Colour(bounceColour * diffuseFactor * diffuseColour);
+}
+
+Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
+  if (depth >= nBounces) return backgroundColour;
+
+  auto intersection = checkIntersection(ray);
+  if (!intersection) return backgroundColour;
+
+  auto [hitShape, hitDistance] = *intersection;
+  Vector3D hitPoint = ray.at(hitDistance);
+  Vector3D normal = hitShape->getSurfaceNormal(hitPoint).normalize();
+  Material material = hitShape->getMaterial();
+
+  Colour ambientColour = Colour(); // Define your scene's ambient light colour if any
+  Colour colour = ambientColour; // Initialize with ambient light
+
+  // Sample diffuse component
+  Vector3D bounceDirection = normal.randomInHemisphere();
+  Ray bounceRay(hitPoint + bounceDirection, bounceDirection);
+  Colour bounceColour = sampleDiffuseAndSpecular(bounceRay, depth + 1);
+  Colour diffuseColour = material.getDiffuseColour();
+  colour += bounceColour * material.getKd() * diffuseColour;
+
+  // Compute the specular component for each light source
+  for (const auto& lightSource : lightSources) {
+    Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
+    Vector3D reflectionDir = (-lightDir).reflect(normal).normalize();
+    Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
+
+    double specIntensity = std::pow(std::max(viewDir.dot(reflectionDir), 0.0), material.getSpecularExponent());
+    Colour specColour = Colour(lightSource->getIntensity() * specIntensity * material.getSpecularColour());
+
+    colour += specColour * material.getKs();
+  }
+
+  // Reflectivity
+  if (material.getIsReflective()) {
+    Vector3D reflectDirection = ray.getDirection().reflect(normal);
+    Ray reflectRay(hitPoint + reflectDirection, reflectDirection);
+    Colour reflectColour = sampleDiffuseAndSpecular(reflectRay, depth + 1);
+    colour += reflectColour * material.getReflectivity();
+  }
+
+  return colour;
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray) const {

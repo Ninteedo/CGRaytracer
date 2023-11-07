@@ -6,8 +6,6 @@
 
 class PointLight : public LightSource {
  private:
-  Vector3D position;
-  Vector3D intensity;
 
  public:
   PointLight(const Vector3D &position, const Vector3D &intensity);

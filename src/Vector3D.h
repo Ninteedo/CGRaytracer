@@ -78,6 +78,8 @@ class Vector3D {
   static Vector3D randomUnitVector();
 
   [[nodiscard]] Vector3D randomInHemisphere() const;
+
+  Vector3D reflect(const Vector3D &normal) const;
 };
 
 std::ostream& operator<<(std::ostream &os, const Vector3D& v);
