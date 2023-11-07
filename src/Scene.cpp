@@ -191,16 +191,18 @@ Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
   colour += bounceColour * material.getKd() * diffuseColour;
 
   // Compute the specular component for each light source
+  Colour specColour = Colour();
   for (const auto &lightSource : lightSources) {
     Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
     Vector3D reflectionDir = (-lightDir).reflect(normal).normalize();
     Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
 
-    double specIntensity = std::pow(std::max(viewDir.dot(reflectionDir), 0.0), material.getSpecularExponent());
-    Colour specColour = Colour(lightSource->getIntensity() * specIntensity * material.getSpecularColour());
-
-    colour += specColour * material.getKs();
+    if (!isInShadow(hitPoint, *lightSource)) {
+      double specIntensity = std::pow(std::max(viewDir.dot(reflectionDir), 0.0), material.getSpecularExponent());
+      specColour += lightSource->getIntensity() * specIntensity * material.getSpecularColour();
+    }
   }
+  colour += specColour * material.getKs();
 
   // Reflectivity
   if (material.getIsReflective()) {
@@ -229,39 +231,38 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   Vector3D normal = hitShape->getSurfaceNormal(hitPoint).normalize();
   Material material = hitShape->getMaterial();
 
-  // Initialize the color with ambient light if defined, otherwise black
-  Colour ambientColour = Colour();
-  Colour colour = Colour(ambientColour * material.getKd());
+  // Initialize the colour with ambient light if defined, otherwise black
+  Colour ambientIntensity = Colour(0.1, 0.1, 0.1);
+  Colour ambientColour = Colour(ambientIntensity * material.getKd());
+
+  Colour diffuseSpecularSum = Colour();
 
   // Diffuse and specular calculations for each light source
   for (const auto &lightSource : lightSources) {
     Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
     Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
     Vector3D halfDir = (lightDir + viewDir).normalize();
+    double lightDistance = (lightSource->getPosition() - hitPoint).magnitude();
 
     // Check for shadow
     if (!isInShadow(hitPoint, *lightSource)) {
       // Diffuse term
-      double diff = std::max(lightDir.dot(normal), 0.0);
-      Colour diffuseColour = Colour(lightSource->getIntensity() * diff * material.getDiffuseColour());
+      double ln = lightDir.dot(normal);
+      Colour id = Colour(lightSource->getIntensity() * material.getDiffuseColour());
+      Colour diffuseColour = Colour(id * ln * material.getKd());
+      diffuseSpecularSum += diffuseColour * material.getKd();
 
       // Blinn-Phong specular term
-      double spec = std::pow(std::max(halfDir.dot(normal), 0.0), material.getSpecularExponent());
-      Colour specularColour = Colour(lightSource->getIntensity() * spec * material.getSpecularColour());
-
-      colour += diffuseColour * material.getKd() + specularColour * material.getKs();
+      double hn = halfDir.dot(normal);
+      Colour is = Colour(lightSource->getIntensity() * material.getSpecularColour());
+      Colour specularColour = Colour(is * std::pow(hn, material.getSpecularExponent()) * material.getKs());
+      diffuseSpecularSum += specularColour * material.getKs() / (lightDistance * lightDistance);
     }
   }
 
-  // Reflectivity and refraction
-  if (material.getIsReflective()) {
-    Vector3D reflectDir = ray.getDirection().reflect(normal).normalize();
-    Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
-    Colour reflectColour = sampleBlinnPhong(reflectRay, depth + 1);
-    colour += reflectColour * material.getReflectivity();
-  }
+  Colour colour = Colour(ambientColour + diffuseSpecularSum);
 
-  // Clamp color values to ensure they are within the valid range
+  // Clamp colour values to ensure they are within the valid range
   colour = colour.clamp();
 
   return colour;
