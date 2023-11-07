@@ -44,7 +44,8 @@ std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) co
       Vector3D baseToIntersection = intersectionPoint - centre;
       double heightAlongAxis = baseToIntersection.dot(axis);
 
-      if (heightAlongAxis < 0 || heightAlongAxis > this->height) continue; // Outside the height bounds of the cylinder
+      // Check if outside the height bounds of the cylinder
+      if (heightAlongAxis < -height || heightAlongAxis > height) continue;
 
       // If we reach this point, the intersection is valid.
       // You can either choose to return the first valid t or choose the smallest positive t.
@@ -56,12 +57,12 @@ std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) co
 
   // Check the caps
   // Check the bottom cap
-  double tBottomCap = (-oc.dot(axis)) / d.dot(axis);
+  double tBottomCap = ((centre - axis * height) - ray.getOrigin()).dot(axis) / d.dot(axis);
   // Intersection with the plane of the bottom cap
   if (interval.contains(tBottomCap)) {
     Vector3D pBottomCap = ray.getOrigin() + d * tBottomCap;
     // Vector from the center of the bottom cap to the intersection point
-    Vector3D vBottomCap = pBottomCap - centre;
+    Vector3D vBottomCap = pBottomCap - (centre - axis * height);
     if (vBottomCap.magnitudeSquared() <= radiusSq && (!result || tBottomCap < result.value())) {
       result = tBottomCap;
     }
@@ -95,7 +96,7 @@ Vector3D Cylinder::getSurfaceNormal(Vector3D point) const {
   }
 
   // If the point is on the bottom cap
-  if (std::abs(t) < EPSILON) { // close to zero
+  if (std::abs(t + height) < EPSILON) { // close to zero
     return -axis; // The normal is the negative of the cylinder axis for the bottom cap
   }
 
