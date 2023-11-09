@@ -231,6 +231,8 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   Vector3D normal = hitShape->getSurfaceNormal(hitPoint).normalize();
   Material material = hitShape->getMaterial();
 
+  bool isExitRay = ray.getDirection().dot(normal) > 0;
+
   // Initialize the colour with ambient light if defined, otherwise black
   Colour ambientIntensity = Colour(0.3, 0.3, 0.3);
   Colour ambientColour = Colour(ambientIntensity * material.getDiffuseColour());
@@ -261,27 +263,31 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   }
 
   // Reflectivity and refraction
-  Colour reflectColour = Colour();
+  Colour colour = Colour(ambientColour + diffuseSpecularSum);
   if (material.getIsReflective()) {
     Vector3D reflectDir = ray.getDirection().reflect(normal).normalize();
     Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
     Colour reflectSample = sampleBlinnPhong(reflectRay, depth + 1);
-    reflectColour = Colour(reflectSample * material.getReflectivity());
+    colour = Colour(colour * (1 - material.getReflectivity())
+                        + reflectSample * material.getReflectivity());
   }
-  Colour refractColour = Colour();
   if (material.getIsRefractive()) {
-    Vector3D refractDir = ray.getDirection().refract(normal, material.getRefractiveIndex()).normalize();
-    Ray refractRay(hitPoint, refractDir); // Avoid self-intersection
-    Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
-    refractColour = refractSample;
-  }
+    if (isExitRay) {
+      Vector3D refractDir =
+          ray.getDirection().refract(ray.getDirection(), -normal, 1 / material.getRefractiveIndex()).normalize();
+      Ray refractRay(hitPoint, refractDir);
+      auto refractIntersection = checkIntersection(refractRay);
+      Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
+      colour = refractSample;
 
-  Colour colour;
-  if (material.getIsReflective()) {
-    colour = Colour((ambientColour + diffuseSpecularSum) * (1 - material.getReflectivity())
-                               + reflectColour * material.getReflectivity());
-  } else {
-    colour = Colour(ambientColour + diffuseSpecularSum);
+    } else {
+      Vector3D refractDir =
+          ray.getDirection().refract(ray.getDirection(), normal, material.getRefractiveIndex()).normalize();
+      Ray refractRay(hitPoint, refractDir);
+      auto refractIntersection = checkIntersection(refractRay);
+      Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
+      colour = refractSample;
+    }
   }
 
   // Clamp colour values to ensure they are within the valid range

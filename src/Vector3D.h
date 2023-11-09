@@ -80,7 +80,7 @@ class Vector3D {
   [[nodiscard]] Vector3D randomInHemisphere() const;
 
   [[nodiscard]] Vector3D reflect(const Vector3D &normal) const;
-  [[nodiscard]] Vector3D refract(const Vector3D &normal, double refractiveIndex) const;
+  [[nodiscard]] Vector3D refract(const Vector3D &incident, const Vector3D &normal, double refractiveFactor);
 };
 
 std::ostream& operator<<(std::ostream &os, const Vector3D& v);
