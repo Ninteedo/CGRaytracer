@@ -9,7 +9,7 @@
 using namespace std;
 
 int main() {
-  std::string sceneFilename = "simple_phong.json";
+  std::string sceneFilename = "mirror_image.json";
 
   Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
 

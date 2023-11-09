@@ -115,6 +115,13 @@ Vector3D Vector3D::reflect(const Vector3D &normal) const {
   return *this - normal * 2 * dot(normal);
 }
 
+Vector3D Vector3D::refract(const Vector3D &normal, double refractiveIndex) const {
+    double cosTheta = fmin(-dot(normal), 1.0);
+    Vector3D rOutPerpendicular = (*this + normal * cosTheta) * refractiveIndex;
+    Vector3D rOutParallel = normal * -sqrt(fabs(1.0 - rOutPerpendicular.magnitudeSquared()));
+    return rOutPerpendicular + rOutParallel;
+}
+
 std::ostream &operator<<(std::ostream &os, const Vector3D &v) {
   os << "(" << v.getX() << ", " << v.getY() << ", " << v.getZ() << ")";
   return os;

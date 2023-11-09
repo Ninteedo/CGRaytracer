@@ -268,8 +268,21 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
     Colour reflectSample = sampleBlinnPhong(reflectRay, depth + 1);
     reflectColour = Colour(reflectSample * material.getReflectivity());
   }
+  Colour refractColour = Colour();
+  if (material.getIsRefractive()) {
+    Vector3D refractDir = ray.getDirection().refract(normal, material.getRefractiveIndex()).normalize();
+    Ray refractRay(hitPoint, refractDir); // Avoid self-intersection
+    Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
+    refractColour = refractSample;
+  }
 
-  Colour colour = Colour(ambientColour + diffuseSpecularSum + reflectColour);
+  Colour colour;
+  if (material.getIsReflective()) {
+    colour = Colour((ambientColour + diffuseSpecularSum) * (1 - material.getReflectivity())
+                               + reflectColour * material.getReflectivity());
+  } else {
+    colour = Colour(ambientColour + diffuseSpecularSum);
+  }
 
   // Clamp colour values to ensure they are within the valid range
   colour = colour.clamp();
