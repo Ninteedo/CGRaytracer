@@ -5,6 +5,7 @@
 #include <cmath>
 #include <random>
 #include <iostream>
+#include <omp.h>
 
 Scene::Scene(Colour colour,
              const Camera &camera,
@@ -115,11 +116,16 @@ Image Scene::renderPathtracer() {
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r); };
 
+  int done = 0;
+
+  printProgress(0, camera.getHeight());
+
+  #pragma omp parallel for num_threads(8) schedule(dynamic)
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
-    printProgress(y, camera.getHeight());
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 10, colourSampler));
     }
+    printProgress(++done, camera.getHeight());
   }
   printProgress(camera.getHeight(), camera.getHeight());
   return image;
@@ -362,7 +368,7 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
   }
 
   // Indirect illumination
-  int nSamples = 10;
+  int nSamples = 4;
   Colour bounceColour(0, 0, 0);
   for (int i = 0; i < nSamples; i++) {
     // Get a random direction in the hemisphere of the normal
