@@ -39,5 +39,5 @@ std::optional<double> Triangle::checkIntersection(Ray ray, Interval interval) co
 }
 
 Vector3D Triangle::getSurfaceNormal(Vector3D point) const {
-  return (v1 - v0).cross(v2 - v0);
+  return (v1 - v0).cross(v2 - v0).normalize();
 }
