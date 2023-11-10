@@ -56,9 +56,9 @@ class Scene {
                                                                                            Interval interval = POSITIVE_INTERVAL) const;
 
   bool isInShadow(const Vector3D &point, const LightSource &light) const;
+  bool isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const;
 
   static void printProgress(unsigned int current, unsigned int total) ;
-
 };
 
 #endif //CGRAYTRACER_SCENE_H

@@ -312,9 +312,13 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 }
 
 bool Scene::isInShadow(const Vector3D &point, const LightSource &light) const {
-  Vector3D lightDir = (light.getPosition() - point).normalize();
+  auto [lightDir, distanceToLight] = light.getDirectionAndDistance(point);
   Ray shadowRay(point, lightDir);
-  Interval interval = Interval(EPSILON, (light.getPosition() - point).magnitude());
+  return isInShadow(shadowRay, distanceToLight, light);
+}
+
+bool Scene::isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const {
+  Interval interval = Interval(EPSILON, maxDistance);
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(shadowRay, interval);
   return intersection.has_value();
 }
@@ -335,28 +339,6 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
   Vector3D normal = hitShape->getSurfaceNormal(ray.at(intersection.value().second));
   Material material = hitShape->getMaterial();
 
-  // Specular illumination
-  Colour specularIllumination(0, 0, 0);
-  double specularExponent = material.getSpecularExponent();
-  Colour specularColour = material.getSpecularColour();
-  for (const auto &lightSource : lightSources) {
-    auto [toLight, distanceToLight] = lightSource->getDirectionAndDistance(hitPoint);
-    Vector3D lightDirection = toLight.normalize();
-
-    if (!isInShadow(hitPoint, *lightSource)) {
-      // Calculate the reflection of the light direction around the normal
-      Vector3D reflectionDirection = lightDirection.reflect(normal).normalize();
-
-      // Calculate the specular term
-      double specAngle = std::max(reflectionDirection.dot(ray.getDirection().normalize()), 0.0);
-      double specularTerm = std::pow(specAngle, specularExponent);
-
-      // Attenuate the light based on the distance and add it to the direct illumination
-      Colour lightIntensity = Colour(lightSource->getIntensity() / (4 * M_PI * distanceToLight * distanceToLight));
-      specularIllumination += specularColour * lightIntensity * specularTerm;
-    }
-  }
-
   // Diffuse illumination
 
   // Get the diffuse factor and backgroundColour of the object
@@ -366,15 +348,16 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
   // Direct illumination
   Colour directIllumination(0, 0, 0);
   for (const auto &lightSource : lightSources) {
-    Vector3D toLight = lightSource->getPosition() - hitPoint;
-    double distanceToLight = toLight.magnitude();
-    Vector3D lightDirection = toLight.normalize();
+    for (int i = 0; i < lightSource->samplingFactor; i++) {
+      auto [toLight, distanceToLight] = lightSource->getDirectionAndDistance(hitPoint);
+      Vector3D lightDirection = toLight.normalize();
 
-    if (!isInShadow(hitPoint, *lightSource)) {
-      // Compute the illumination contribution
-      double nDotL = std::max(normal.dot(toLight), 0.0);
-      Colour lightIntensity = Colour(lightSource->getIntensity() / (4 * M_PI * distanceToLight * distanceToLight));
-      directIllumination += material.getDiffuseColour() * lightIntensity * nDotL;
+      if (!isInShadow(Ray(hitPoint, toLight), distanceToLight, *lightSource)) {
+        // Compute the illumination contribution
+        double nDotL = std::max(normal.dot(toLight), 0.0);
+        Colour lightIntensity = Colour(lightSource->getIntensity() / (4 * M_PI * distanceToLight * distanceToLight));
+        directIllumination += material.getDiffuseColour() * lightIntensity * nDotL * diffuseFactor / lightSource->samplingFactor;
+      }
     }
   }
 
@@ -388,11 +371,11 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
     // Create a new ray starting at the intersection point and going in the bounce direction
     Ray bounceRay = Ray(ray.at(intersection.value().second), bounceDirection);
 
-    // Calculate the backgroundColour of the bounce ray
-    bounceColour += Colour(sampleDiffuse(bounceRay, depth + 1) / nSamples);
+    // Calculate the colour of the bounce ray
+    bounceColour += Colour(samplePathtracer(bounceRay, depth + 1) / nSamples);
   }
 
-  return Colour(specularIllumination + directIllumination + bounceColour * diffuseFactor * diffuseColour);
+  return Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray,

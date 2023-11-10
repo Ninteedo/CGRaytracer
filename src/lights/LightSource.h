@@ -22,6 +22,8 @@ class LightSource {
   [[nodiscard]] Vector3D getIntensity() const;
 
   [[nodiscard]] virtual std::pair<Vector3D, double> getDirectionAndDistance(const Vector3D &point) const = 0;
+
+  int samplingFactor = 1;
 };
 
 #endif //CGRAYTRACER_LIGHTSOURCE_H

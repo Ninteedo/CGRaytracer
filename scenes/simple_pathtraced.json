@@ -17,9 +17,10 @@
             "backgroundcolor": [0.25, 0.25, 0.25], 
             "lightsources":[ 
                 { 
-                    "type":"pointlight", 
+                    "type":"spherelight", 
                     "position":[0, 1.0, 0.5], 
-                    "intensity":[0.75, 0.75, 0.75] 
+                    "intensity":[0.9, 0.9, 0.9],
+                    "radius": 0.2
                 }
             ], 
             "shapes":[ 
