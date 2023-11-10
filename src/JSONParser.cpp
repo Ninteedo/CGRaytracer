@@ -266,3 +266,10 @@ void JsonParser::parseNull() {
     throw JsonParseError(json, pos, "Expected 'null'");
   }
 }
+
+JsonValue getOrDefault(JsonObject jsonObject, const std::string &key, JsonValue defaultValue) {
+  if (!jsonObject.contains(key)) {
+    return defaultValue;
+  }
+  return jsonObject[key];
+}

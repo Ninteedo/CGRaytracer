@@ -85,4 +85,6 @@ class JsonParser {
   void parseNull();
 };
 
+JsonValue getOrDefault(JsonObject jsonObject, const std::string &key, JsonValue defaultValue = JsonValue());
+
 #endif // JSON_PARSER_H
