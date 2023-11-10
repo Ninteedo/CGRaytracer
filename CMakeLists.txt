@@ -15,19 +15,19 @@ project ("CGRaytracer")
 add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vector3D.cpp" "src/Vector3D.h" "src/Image.h" "src/Image.cpp" "src/Colour.cpp" "src/Colour.h" "src/Ray.h" "src/Ray.cpp" "src/JSONParser.h" "src/JSONParser.cpp" "test/json_parser_test.cpp"
         src/Scene.h
         src/shapes/Shape.h
-        src/LightSource.h
+        src/lights/LightSource.h
         src/Material.h
         src/Camera.h
         src/shapes/Sphere.h
         src/shapes/Cylinder.h
         src/shapes/Triangle.h
-        src/PointLight.h
+        src/lights/PointLight.h
         src/shapes/Sphere.cpp
         src/shapes/Shape.cpp
         src/Material.cpp
         src/Scene.cpp
-        src/LightSource.cpp
-        src/PointLight.cpp
+        src/lights/LightSource.cpp
+        src/lights/PointLight.cpp
         src/Camera.cpp
         src/PinholeCamera.cpp
         src/PinholeCamera.h

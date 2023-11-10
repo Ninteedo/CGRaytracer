@@ -11,6 +11,8 @@ class PointLight : public LightSource {
   PointLight(const Vector3D &position, const Vector3D &intensity);
 
   explicit PointLight(JsonObject json);
+
+  [[nodiscard]] std::pair<Vector3D, double> getDirectionAndDistance(const Vector3D &point) const override;
 };
 
 #endif //CGRAYTRACER_POINTLIGHT_H

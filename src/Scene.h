@@ -5,7 +5,7 @@
 #include "JSONParser.h"
 #include "Colour.h"
 #include "shapes/Shape.h"
-#include "LightSource.h"
+#include "lights/LightSource.h"
 #include "Camera.h"
 #include "Image.h"
 #include <random>

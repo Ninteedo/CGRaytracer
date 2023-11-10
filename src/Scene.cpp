@@ -118,7 +118,7 @@ Image Scene::renderPathtracer() {
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     printProgress(y, camera.getHeight());
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
-      image.setColor(x, y, sample(x, y, 100, colourSampler));
+      image.setColor(x, y, sample(x, y, 10, colourSampler));
     }
   }
   printProgress(camera.getHeight(), camera.getHeight());
@@ -340,8 +340,7 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
   double specularExponent = material.getSpecularExponent();
   Colour specularColour = material.getSpecularColour();
   for (const auto &lightSource : lightSources) {
-    Vector3D toLight = lightSource->getPosition() - hitPoint;
-    double distanceToLight = toLight.magnitude();
+    auto [toLight, distanceToLight] = lightSource->getDirectionAndDistance(hitPoint);
     Vector3D lightDirection = toLight.normalize();
 
     if (!isInShadow(hitPoint, *lightSource)) {

@@ -3,8 +3,8 @@
 #define CGRAYTRACER_LIGHTSOURCE_H
 
 #include <memory>
-#include "Vector3D.h"
-#include "JSONParser.h"
+#include "../Vector3D.h"
+#include "../JSONParser.h"
 
 class LightSource {
  private:
@@ -20,6 +20,8 @@ class LightSource {
 
   [[nodiscard]] Vector3D getPosition() const;
   [[nodiscard]] Vector3D getIntensity() const;
+
+  [[nodiscard]] virtual std::pair<Vector3D, double> getDirectionAndDistance(const Vector3D &point) const = 0;
 };
 
 #endif //CGRAYTRACER_LIGHTSOURCE_H
