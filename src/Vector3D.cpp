@@ -57,6 +57,14 @@ Vector3D Vector3D::operator+=(const Vector3D &v) {
   return *this;
 }
 
+bool Vector3D::operator==(const Vector3D &v) const {
+  return x == v.x && y == v.y && z == v.z;
+}
+
+bool Vector3D::operator!=(const Vector3D &v) const {
+  return !(*this == v);
+}
+
 double Vector3D::dot(const Vector3D &v) const {
   return x * v.x + y * v.y + z * v.z;
 }

@@ -51,6 +51,10 @@ class Vector3D {
 
   Vector3D operator+=(const Vector3D &v);
 
+  bool operator==(const Vector3D &v) const;
+
+  bool operator!=(const Vector3D &v) const;
+
   // Dot product
   [[nodiscard]] double dot(const Vector3D &v) const;
 
