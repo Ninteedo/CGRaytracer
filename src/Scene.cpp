@@ -52,8 +52,8 @@ Image Scene::render() {
     return renderBinary();
   } else if (renderMode == PHONG) {
     return renderBlinnPhong();
-//  } else if (renderMode == PATHTRACER) {
-//    return renderPathtracer();
+  } else if (renderMode == PATHTRACER) {
+    return renderPathtracer();
   } else {
     throw std::runtime_error("Invalid render mode");
   }
@@ -104,6 +104,21 @@ Image Scene::renderBlinnPhong() {
     printProgress(y, camera.getHeight());
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 8, colourSampler));
+    }
+  }
+  printProgress(camera.getHeight(), camera.getHeight());
+  return image;
+}
+
+Image Scene::renderPathtracer() {
+  Image image(camera.getWidth(), camera.getHeight());
+
+  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r); };
+
+  for (unsigned int y = 0; y < camera.getHeight(); y++) {
+    printProgress(y, camera.getHeight());
+    for (unsigned int x = 0; x < camera.getWidth(); x++) {
+      image.setColor(x, y, sample(x, y, 100, colourSampler));
     }
   }
   printProgress(camera.getHeight(), camera.getHeight());
@@ -274,7 +289,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   if (material.getIsRefractive()) {
     if (isExitRay) {
       Vector3D refractDir =
-          ray.getDirection().refract(ray.getDirection(), -normal, 1 / material.getRefractiveIndex()).normalize();
+          ray.getDirection().refract(-normal, 1 / material.getRefractiveIndex()).normalize();
       Ray refractRay(hitPoint, refractDir);
       auto refractIntersection = checkIntersection(refractRay);
       Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
@@ -282,7 +297,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 
     } else {
       Vector3D refractDir =
-          ray.getDirection().refract(ray.getDirection(), normal, material.getRefractiveIndex()).normalize();
+          ray.getDirection().refract(normal, material.getRefractiveIndex()).normalize();
       Ray refractRay(hitPoint, refractDir);
       auto refractIntersection = checkIntersection(refractRay);
       Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
@@ -299,9 +314,86 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 bool Scene::isInShadow(const Vector3D &point, const LightSource &light) const {
   Vector3D lightDir = (light.getPosition() - point).normalize();
   Ray shadowRay(point, lightDir);
-  Interval interval = Interval(0.0001, (light.getPosition() - point).magnitude());
+  Interval interval = Interval(EPSILON, (light.getPosition() - point).magnitude());
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(shadowRay, interval);
   return intersection.has_value();
+}
+
+Colour Scene::samplePathtracer(const Ray &ray, int depth) {
+  // Base case: if we've reached the maximum number of bounces, return black
+  if (depth >= nBounces) return backgroundColour;
+
+  // Check if the ray intersects with any objects in the scene
+  std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
+
+  // If the ray doesn't intersect with anything, return the background backgroundColour
+  if (!intersection.has_value()) return backgroundColour;
+
+  auto [hitShape, hitDistance] = intersection.value();
+
+  Vector3D hitPoint = ray.at(hitDistance);
+  Vector3D normal = hitShape->getSurfaceNormal(ray.at(intersection.value().second));
+  Material material = hitShape->getMaterial();
+
+  // Specular illumination
+  Colour specularIllumination(0, 0, 0);
+  double specularExponent = material.getSpecularExponent();
+  Colour specularColour = material.getSpecularColour();
+  for (const auto &lightSource : lightSources) {
+    Vector3D toLight = lightSource->getPosition() - hitPoint;
+    double distanceToLight = toLight.magnitude();
+    Vector3D lightDirection = toLight.normalize();
+
+    if (!isInShadow(hitPoint, *lightSource)) {
+      // Calculate the reflection of the light direction around the normal
+      Vector3D reflectionDirection = lightDirection.reflect(normal).normalize();
+
+      // Calculate the specular term
+      double specAngle = std::max(reflectionDirection.dot(ray.getDirection().normalize()), 0.0);
+      double specularTerm = std::pow(specAngle, specularExponent);
+
+      // Attenuate the light based on the distance and add it to the direct illumination
+      Colour lightIntensity = Colour(lightSource->getIntensity() / (4 * M_PI * distanceToLight * distanceToLight));
+      specularIllumination += specularColour * lightIntensity * specularTerm;
+    }
+  }
+
+  // Diffuse illumination
+
+  // Get the diffuse factor and backgroundColour of the object
+  double diffuseFactor = intersection.value().first->getMaterial().getKd();
+  Colour diffuseColour = intersection.value().first->getMaterial().getDiffuseColour();
+
+  // Direct illumination
+  Colour directIllumination(0, 0, 0);
+  for (const auto &lightSource : lightSources) {
+    Vector3D toLight = lightSource->getPosition() - hitPoint;
+    double distanceToLight = toLight.magnitude();
+    Vector3D lightDirection = toLight.normalize();
+
+    if (!isInShadow(hitPoint, *lightSource)) {
+      // Compute the illumination contribution
+      double nDotL = std::max(normal.dot(toLight), 0.0);
+      Colour lightIntensity = Colour(lightSource->getIntensity() / (4 * M_PI * distanceToLight * distanceToLight));
+      directIllumination += material.getDiffuseColour() * lightIntensity * nDotL;
+    }
+  }
+
+  // Indirect illumination
+  int nSamples = 10;
+  Colour bounceColour(0, 0, 0);
+  for (int i = 0; i < nSamples; i++) {
+    // Get a random direction in the hemisphere of the normal
+    Vector3D bounceDirection = normal + normal.randomInHemisphere();
+
+    // Create a new ray starting at the intersection point and going in the bounce direction
+    Ray bounceRay = Ray(ray.at(intersection.value().second), bounceDirection);
+
+    // Calculate the backgroundColour of the bounce ray
+    bounceColour += Colour(sampleDiffuse(bounceRay, depth + 1) / nSamples);
+  }
+
+  return Colour(specularIllumination + directIllumination + bounceColour * diffuseFactor * diffuseColour);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray,

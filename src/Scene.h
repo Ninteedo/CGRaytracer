@@ -41,6 +41,7 @@ class Scene {
   Image renderBinary();
   Image renderShaded();
   Image renderBlinnPhong();
+  Image renderPathtracer();
 
   Colour sample(unsigned int x, unsigned int y, int nSamples, const std::function<Colour(const Scene &,
                                                                                          const Ray &)> &sampleFunction);
@@ -49,6 +50,7 @@ class Scene {
   Colour sampleDiffuse(const Ray &ray, int depth = 0);
   Colour sampleDiffuseAndSpecular(const Ray &ray, int depth = 0);
   Colour sampleBlinnPhong(const Ray &ray, int depth = 0);
+  Colour samplePathtracer(const Ray &ray, int depth = 0);
 
   [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray,
                                                                                            Interval interval = POSITIVE_INTERVAL) const;

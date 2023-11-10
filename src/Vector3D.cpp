@@ -115,15 +115,15 @@ Vector3D Vector3D::reflect(const Vector3D &normal) const {
   return *this - normal * 2 * dot(normal);
 }
 
-Vector3D Vector3D::refract(const Vector3D &incident, const Vector3D &normal, double refractiveFactor) {
-  double cosTheta = fmin(-incident.dot(normal), 1.0);
+Vector3D Vector3D::refract(const Vector3D &normal, double refractiveFactor) {
+  double cosTheta = fmin(-this->dot(normal), 1.0);
   double sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 
   if (refractiveFactor * sinTheta > 1.0) {
     return reflect(normal);
   }
 
-  Vector3D r_out_perp = (incident + normal * cosTheta) * refractiveFactor;
+  Vector3D r_out_perp = (*this + normal * cosTheta) * refractiveFactor;
   Vector3D r_out_parallel = normal * -sqrt(fabs(1.0 - r_out_perp.magnitudeSquared()));
   return r_out_perp + r_out_parallel;
 }

@@ -9,7 +9,7 @@
 using namespace std;
 
 int main() {
-  std::string sceneFilename = "glass_spheres.json";
+  std::string sceneFilename = "simple_pathtraced.json";
 
   Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
 
