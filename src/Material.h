@@ -16,6 +16,7 @@ class Material {
   const double reflectivity;
   const bool isRefractive;
   const double refractiveIndex;
+  const double roughness;
 
  public:
   Material(double ks,
@@ -26,7 +27,8 @@ class Material {
            bool isReflective,
            double reflectivity,
            bool isRefractive,
-           double refractiveIndex);
+           double refractiveIndex,
+           double roughness);
   explicit Material(JsonObject materialJson);
   ~Material();
 
@@ -39,6 +41,7 @@ class Material {
   [[nodiscard]] double getReflectivity() const;
   [[nodiscard]] bool getIsRefractive() const;
   [[nodiscard]] double getRefractiveIndex() const;
+  [[nodiscard]] double getRoughness() const;
 };
 
 #endif //CGRAYTRACER_MATERIAL_H

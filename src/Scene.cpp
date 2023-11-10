@@ -353,7 +353,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
   }
 
   if (reflectivity > 0) {
-    Vector3D reflectDirection = ray.getDirection().reflect(normal);
+    Vector3D reflectDirection = ray.getDirection().reflect(normal, material.getRoughness());
     Ray reflectRay(hitPoint, reflectDirection);
     auto [newReflectionColour, reflectionDistance] = samplePathtracer(reflectRay, depth + 1);
     reflectionColour = newReflectionColour;
@@ -388,13 +388,13 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
         Colour specularContribution = Colour(material.getSpecularColour() * specularCoefficient * lightSource->getIntensity());
 
         // Combine contributions
-        directIllumination += diffuseContribution / (lightSource->samplingFactor * distanceToLight * distanceToLight);
+        directIllumination += (diffuseContribution + specularContribution) / (lightSource->samplingFactor * distanceToLight * distanceToLight);
       }
     }
   }
 
   // Indirect illumination
-  int nSamples = 2;
+  int nSamples = std::max(1, 8 - depth * 2);
   Colour bounceColour(0, 0, 0);
   for (int i = 0; i < nSamples; i++) {
     // Get a random direction in the hemisphere of the normal

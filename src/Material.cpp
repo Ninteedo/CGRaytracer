@@ -5,11 +5,11 @@
 Material::Material(double ks, double kd, int specularExponent,
                    Colour diffuseColour, Colour specularColour,
                    bool isReflective, double reflectivity, bool isRefractive,
-                   double refractiveIndex)
+                   double refractiveIndex, double roughness)
     : ks(ks), kd(kd), specularExponent(specularExponent),
       diffuseColour(std::move(diffuseColour)), specularColour(std::move(specularColour)),
       isReflective(isReflective), reflectivity(reflectivity),
-      isRefractive(isRefractive), refractiveIndex(refractiveIndex) {}
+      isRefractive(isRefractive), refractiveIndex(refractiveIndex), roughness(roughness) {}
 
 Material::Material(JsonObject materialJson)
     : Material(
@@ -21,7 +21,8 @@ Material::Material(JsonObject materialJson)
     materialJson["isreflective"].asBool(),
     materialJson["reflectivity"].asDouble(),
     materialJson["isrefractive"].asBool(),
-    materialJson["refractiveindex"].asDouble()) {}
+    materialJson["refractiveindex"].asDouble(),
+    getOrDefault(materialJson, "roughness", JsonValue(0.0)).asDouble()) {}
 
 Material::~Material() = default;
 
@@ -42,3 +43,5 @@ double Material::getReflectivity() const { return reflectivity; }
 bool Material::getIsRefractive() const { return isRefractive; }
 
 double Material::getRefractiveIndex() const { return refractiveIndex; }
+
+double Material::getRoughness() const { return roughness; }

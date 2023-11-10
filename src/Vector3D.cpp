@@ -111,8 +111,12 @@ Vector3D Vector3D::randomInHemisphere() const {
   }
 }
 
-Vector3D Vector3D::reflect(const Vector3D &normal) const {
-  return *this - normal * 2 * dot(normal);
+Vector3D Vector3D::reflect(const Vector3D &normal, double roughness) const {
+  Vector3D roughnessVector;
+  if (roughness > 0.0) {
+    roughnessVector = randomInUnitSphere() * roughness;
+  }
+  return *this - normal * 2 * dot(normal) + roughnessVector;
 }
 
 Vector3D Vector3D::refract(const Vector3D &normal, double refractiveFactor) {
