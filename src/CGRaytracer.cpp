@@ -9,7 +9,7 @@
 using namespace std;
 
 int main() {
-  std::string sceneFilename = "simple_pathtraced.json";
+  std::string sceneFilename = "mirror_image_pathtraced.json";
 
   Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
 
