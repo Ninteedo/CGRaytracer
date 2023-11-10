@@ -8,6 +8,6 @@ PointLight::PointLight(JsonObject json)
 
 std::pair<Vector3D, double> PointLight::getDirectionAndDistance(const Vector3D &point) const {
   Vector3D direction = getPosition() - point;
-  double distance = direction.magnitudeSquared();
+  double distance = direction.magnitude();
   return {direction / distance, distance};
 }

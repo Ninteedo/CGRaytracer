@@ -9,5 +9,5 @@ std::pair<Vector3D, double> SphereLight::getDirectionAndDistance(const Vector3D 
   Vector3D randomPoint = getPosition() + centreDirection.randomInHemisphere() * radius;
   Vector3D toLight = randomPoint - point;
   double distance = toLight.magnitude();
-  return {toLight.normalize(), distance};
+  return {toLight / distance, distance};
 }
