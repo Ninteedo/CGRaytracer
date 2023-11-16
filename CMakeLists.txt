@@ -52,5 +52,7 @@ if(OpenMP_CXX_FOUND)
   target_link_libraries(CGRaytracer PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
+target_compile_options(CGRaytracer PRIVATE -mavx)
+
 
 # TODO: Add tests and install targets if needed.

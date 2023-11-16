@@ -2,63 +2,73 @@
 #include <iostream>
 #include <cmath>
 
-Vector3D::Vector3D() : x(0), y(0), z(0) {}
+Vector3D::Vector3D() {
+  data = _mm256_setzero_pd();
+}
 
-Vector3D::Vector3D(double x, double y, double z) : x(x), y(y), z(z) {}
+Vector3D::Vector3D(double x, double y, double z) {
+  data = _mm256_set_pd(0, z, y, x);
+}
 
 Vector3D::Vector3D(const Vector3D &v) = default;
 
-Vector3D::Vector3D(JsonArray json) : x(json[0].asDouble()), y(json[1].asDouble()), z(json[2].asDouble()) {}
+Vector3D::Vector3D(const __m256d &data) : data(data) {}
+
+Vector3D::Vector3D(JsonArray json) : Vector3D(json[0].asDouble(), json[1].asDouble(), json[2].asDouble()) {}
 
 Vector3D::~Vector3D() = default;
 
-double Vector3D::getX() const { return x; }
-double Vector3D::getY() const { return y; }
-double Vector3D::getZ() const { return z; }
+double Vector3D::getX() const { return _mm256_cvtsd_f64(data); }
+
+double Vector3D::getY() const {
+  __m128d high = _mm256_extractf128_pd(data, 0);
+  return _mm_cvtsd_f64(_mm_unpackhi_pd(high, high));
+}
+
+double Vector3D::getZ() const {
+  return _mm_cvtsd_f64(_mm256_extractf128_pd(data, 1));
+}
 
 double Vector3D::operator[](int i) const {
   switch (i) {
-    case 0: return x;
-    case 1: return y;
-    case 2: return z;
+    case 0: return getX();
+    case 1: return getY();
+    case 2: return getZ();
     default: throw std::out_of_range("Index out of bounds");
   }
 }
 
 Vector3D Vector3D::operator+(const Vector3D &v) const {
-  return {x + v.x, y + v.y, z + v.z};
+  return _mm256_add_pd(this->data, v.data);
 }
 
 Vector3D Vector3D::operator-(const Vector3D &v) const {
-  return {x - v.x, y - v.y, z - v.z};
+  return _mm256_sub_pd(this->data, v.data);
 }
 
 Vector3D Vector3D::operator-() const {
-  return {-x, -y, -z};
+  return _mm256_sub_pd(_mm256_setzero_pd(), data);
 }
 
 Vector3D Vector3D::operator*(double val) const {
-  return {x * val, y * val, z * val};
+  return _mm256_mul_pd(this->data, _mm256_set1_pd(val));
 }
 
 Vector3D Vector3D::operator*(const Vector3D &v) const {
-  return {x * v.x, y * v.y, z * v.z};
+  return _mm256_mul_pd(this->data, v.data);
 }
 
 Vector3D Vector3D::operator/(double val) const {
-  return {x / val, y / val, z / val};
+  return _mm256_div_pd(this->data, _mm256_set1_pd(val));
 }
 
 Vector3D Vector3D::operator+=(const Vector3D &v) {
-  x += v.x;
-  y += v.y;
-  z += v.z;
-
+  this->data = _mm256_add_pd(this->data, v.data);
   return *this;
 }
 
 bool Vector3D::operator==(const Vector3D &v) const {
-  return x == v.x && y == v.y && z == v.z;
+  return getX() == v.getX() && getY() == v.getY() && getZ() == v.getZ();
 }
 
 bool Vector3D::operator!=(const Vector3D &v) const {
@@ -66,28 +76,33 @@ bool Vector3D::operator!=(const Vector3D &v) const {
 }
 
 double Vector3D::dot(const Vector3D &v) const {
-  return x * v.x + y * v.y + z * v.z;
+  __m256d mul = _mm256_mul_pd(this->data, v.data);
+  __m128d high = _mm256_extractf128_pd(mul, 1);
+  __m128d low = _mm256_castpd256_pd128(mul);
+  __m128d sum = _mm_add_pd(low, high);
+  return _mm_cvtsd_f64(_mm_hadd_pd(sum, sum));
 }
 
 Vector3D Vector3D::cross(const Vector3D &v) const {
-  return {y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x};
+  return {getY() * v.getZ() - getZ() * v.getY(), getZ() * v.getX() - getX() * v.getZ(), getX() * v.getY() - getY() * v.getX()};
 }
 
 double Vector3D::magnitude() const {
-  return sqrt(x * x + y * y + z * z);
+  return sqrt(magnitudeSquared());
 }
 
 double Vector3D::magnitudeSquared() const {
-  return x * x + y * y + z * z;
+  return dot(*this);
 }
 
 Vector3D Vector3D::normalize() const {
   const double mag = magnitude();
-  return {x / mag, y / mag, z / mag};
+  __m256d scalar = _mm256_set1_pd(mag);
+  return _mm256_div_pd(this->data, scalar);
 }
 
 void Vector3D::print() const {
-  std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
+  std::cout << "(" << getX() << ", " << getY() << ", " << getZ() << ")" << std::endl;
 }
 
 Vector3D Vector3D::random() {
