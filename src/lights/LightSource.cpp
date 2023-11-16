@@ -1,4 +1,7 @@
 #include "LightSource.h"
+
+#include <stdexcept>
+
 #include "PointLight.h"
 #include "SphereLight.h"
 

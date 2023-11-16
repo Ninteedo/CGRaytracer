@@ -6,15 +6,11 @@
 #include "Ray.h"
 
 class AABB {
- private:
+ public:
   Vector3D min;
   Vector3D max;
 
- public:
-  AABB(Vector3D min, Vector3D max);
-
-  [[nodiscard]] Vector3D getMin() const;
-  [[nodiscard]] Vector3D getMax() const;
+  AABB(const Vector3D& min, const Vector3D& max);
 
   [[nodiscard]] bool inVolume(const Vector3D& point) const;
 

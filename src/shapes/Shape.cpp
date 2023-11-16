@@ -1,4 +1,7 @@
 #include "Shape.h"
+
+#include <stdexcept>
+
 #include "Cylinder.h"
 #include "Sphere.h"
 #include "Triangle.h"

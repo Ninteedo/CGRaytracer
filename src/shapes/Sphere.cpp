@@ -12,9 +12,9 @@ Sphere::Sphere(JsonObject json)
 ) {}
 
 std::optional<double> Sphere::checkIntersection(Ray ray, Interval interval) const {
-  Vector3D oc = ray.getOrigin() - centre;
-  double a = ray.getDirection().magnitudeSquared();
-  double half_b = oc.dot(ray.getDirection());
+  Vector3D oc = ray.origin - centre;
+  double a = ray.direction.magnitudeSquared();
+  double half_b = oc.dot(ray.direction);
   double c = oc.magnitudeSquared() - radius * radius;
   double discriminant = half_b * half_b - a * c;
 

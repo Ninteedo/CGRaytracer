@@ -80,7 +80,7 @@ class Scene {
                                                                                  const Ray &ray,
                                                                                  Interval interval) const;
 
-  void addShape(std::shared_ptr<Shape> shape);
+  void addShape(const std::shared_ptr<Shape>& shape);
 
   [[nodiscard]] bool isInShadow(const Vector3D &point, const LightSource &light) const;
   [[nodiscard]] bool isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const;

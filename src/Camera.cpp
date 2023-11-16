@@ -1,6 +1,7 @@
 #include <cmath>
 #include "Camera.h"
 #include "PinholeCamera.h"
+#include <stdexcept>
 
 Camera::Camera(const Vector3D &position,
                const Vector3D &lookAt,

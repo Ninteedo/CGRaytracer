@@ -16,8 +16,8 @@ Cylinder::Cylinder(JsonObject json)
 ) {}
 
 std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) const {
-  Vector3D oc = ray.getOrigin() - centre;
-  Vector3D d = ray.getDirection();
+  Vector3D oc = ray.origin - centre;
+  Vector3D d = ray.direction;
   double radiusSq = radius * radius;
 
   // Coefficients for the quadratic equation at^2 + bt + c = 0
@@ -40,7 +40,7 @@ std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) co
       if (!interval.contains(t)) continue;
 
       // Check the height bounds
-      Vector3D intersectionPoint = ray.getOrigin() + ray.getDirection() * t;
+      Vector3D intersectionPoint = ray.origin + ray.direction * t;
       Vector3D baseToIntersection = intersectionPoint - centre;
       double heightAlongAxis = baseToIntersection.dot(axis);
 
@@ -57,10 +57,10 @@ std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) co
 
   // Check the caps
   // Check the bottom cap
-  double tBottomCap = ((centre - axis * height) - ray.getOrigin()).dot(axis) / d.dot(axis);
+  double tBottomCap = ((centre - axis * height) - ray.origin).dot(axis) / d.dot(axis);
   // Intersection with the plane of the bottom cap
   if (interval.contains(tBottomCap)) {
-    Vector3D pBottomCap = ray.getOrigin() + d * tBottomCap;
+    Vector3D pBottomCap = ray.origin + d * tBottomCap;
     // Vector from the center of the bottom cap to the intersection point
     Vector3D vBottomCap = pBottomCap - (centre - axis * height);
     if (vBottomCap.magnitudeSquared() <= radiusSq && (!result || tBottomCap < result.value())) {
@@ -69,10 +69,10 @@ std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) co
   }
 
   // Check the top cap
-  double tTopCap = ((centre + axis * height) - ray.getOrigin()).dot(axis) / d.dot(axis);
+  double tTopCap = ((centre + axis * height) - ray.origin).dot(axis) / d.dot(axis);
   // Intersection with the plane of the top cap
   if (interval.contains(tTopCap)) {
-    Vector3D pTopCap = ray.getOrigin() + d * tTopCap;
+    Vector3D pTopCap = ray.origin + d * tTopCap;
     // Vector from the center of the top cap to the intersection point
     Vector3D vTopCap = pTopCap - (centre + axis * height);
     if (vTopCap.magnitudeSquared() <= radiusSq && (!result || tTopCap < result.value())) {

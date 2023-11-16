@@ -239,7 +239,7 @@ Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
 
   // Reflectivity
   if (material.getIsReflective()) {
-    Vector3D reflectDirection = ray.getDirection().reflect(normal);
+    Vector3D reflectDirection = ray.direction.reflect(normal);
     Ray reflectRay(hitPoint, reflectDirection);
     Colour reflectColour = sampleDiffuseAndSpecular(reflectRay, depth + 1);
     colour += reflectColour * material.getReflectivity();
@@ -264,7 +264,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   Vector3D normal = hitShape->getSurfaceNormal(hitPoint).normalize();
   Material material = hitShape->getMaterial();
 
-  bool isExitRay = ray.getDirection().dot(normal) > 0;
+  bool isExitRay = ray.direction.dot(normal) > 0;
 
   // Initialize the colour with ambient light if defined, otherwise black
   Colour ambientIntensity = Colour(0.3, 0.3, 0.3);
@@ -298,7 +298,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   // Reflectivity and refraction
   Colour colour = Colour(ambientColour + diffuseSpecularSum);
   if (material.getIsReflective()) {
-    Vector3D reflectDir = ray.getDirection().reflect(normal).normalize();
+    Vector3D reflectDir = ray.direction.reflect(normal).normalize();
     Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
     Colour reflectSample = sampleBlinnPhong(reflectRay, depth + 1);
     colour = Colour(colour * (1 - material.getReflectivity())
@@ -307,7 +307,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   if (material.getIsRefractive()) {
     if (isExitRay) {
       Vector3D refractDir =
-          ray.getDirection().refract(-normal, 1 / material.getRefractiveIndex()).normalize();
+          ray.direction.refract(-normal, 1 / material.getRefractiveIndex()).normalize();
       Ray refractRay(hitPoint, refractDir);
       auto refractIntersection = checkIntersection(refractRay);
       Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
@@ -315,7 +315,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 
     } else {
       Vector3D refractDir =
-          ray.getDirection().refract(normal, material.getRefractiveIndex()).normalize();
+          ray.direction.refract(normal, material.getRefractiveIndex()).normalize();
       Ray refractRay(hitPoint, refractDir);
       auto refractIntersection = checkIntersection(refractRay);
       Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
@@ -365,7 +365,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
   }
 
   if (reflectivity > 0) {
-    Vector3D reflectDirection = ray.getDirection().reflect(normal, material.getRoughness());
+    Vector3D reflectDirection = ray.direction.reflect(normal, material.getRoughness());
     Ray reflectRay(hitPoint, reflectDirection);
     auto [newReflectionColour, reflectionDistance] = samplePathtracer(reflectRay, depth + 1);
     reflectionColour = newReflectionColour;
@@ -387,7 +387,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
     for (int i = 0; i < lightSource->samplingFactor; i++) {
       auto [toLight, distanceToLight] = lightSource->getDirectionAndDistance(hitPoint);
       Vector3D lightDirection = toLight.normalize();
-      Vector3D halfDirection = (lightDirection + ray.getDirection()).normalize();
+      Vector3D halfDirection = (lightDirection + ray.direction).normalize();
 
       if (!isInShadow(Ray(hitPoint, toLight), distanceToLight, *lightSource)) {
         // Compute the illumination contribution
@@ -490,7 +490,7 @@ void Scene::printProgress(unsigned int current, unsigned int total, std::chrono:
   }
 }
 
-void Scene::addShape(std::shared_ptr<Shape> shape) {
+void Scene::addShape(const std::shared_ptr<Shape>& shape) {
   shapes.push_back(shape);
   buildBspTree();
 }

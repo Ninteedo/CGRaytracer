@@ -15,19 +15,19 @@ Triangle::Triangle(JsonObject json)
 std::optional<double> Triangle::checkIntersection(Ray ray, Interval interval) const {
   Vector3D e1 = v1 - v0;
   Vector3D e2 = v2 - v0;
-  Vector3D h = ray.getDirection().cross(e2);
+  Vector3D h = ray.direction.cross(e2);
   double a = e1.dot(h);
   if (a > -0.00001 && a < 0.00001) {
     return std::nullopt;
   }
   double f = 1 / a;
-  Vector3D s = ray.getOrigin() - v0;
+  Vector3D s = ray.origin - v0;
   double u = f * s.dot(h);
   if (u < 0.0 || u > 1.0) {
     return std::nullopt;
   }
   Vector3D q = s.cross(e1);
-  double v = f * ray.getDirection().dot(q);
+  double v = f * ray.direction.dot(q);
   if (v < 0.0 || u + v > 1.0) {
     return std::nullopt;
   }
