@@ -47,4 +47,10 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CGRaytracer PROPERTY CXX_STANDARD 20)
 endif()
 
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+  target_link_libraries(CGRaytracer PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
+
 # TODO: Add tests and install targets if needed.
