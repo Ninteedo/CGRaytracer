@@ -23,6 +23,17 @@ struct SampleRecord {
   double distance = 0;
 };
 
+class Node {
+ public:
+  std::shared_ptr<Shape> shape;
+  std::unique_ptr<Node> left;
+  std::unique_ptr<Node> right;
+
+  Node(std::shared_ptr<Shape> shape, std::unique_ptr<Node> left, std::unique_ptr<Node> right)
+      : shape(std::move(shape)), left(std::move(left)), right(std::move(right)) {}
+
+};
+
 class Scene {
  private:
   int nBounces;
@@ -31,6 +42,9 @@ class Scene {
   Colour backgroundColour;
   std::vector<std::shared_ptr<Shape>> shapes;
   std::vector<std::shared_ptr<LightSource>> lightSources;
+  std::unique_ptr<Node> bspTree;
+
+  void buildBspTree();
  public:
   Scene(Colour colour,
         const Camera &camera,
@@ -58,13 +72,22 @@ class Scene {
   Colour sampleBlinnPhong(const Ray &ray, int depth = 0);
   SampleRecord samplePathtracer(const Ray &ray, int depth = 0);
 
-  [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(const Ray &ray,
-                                                                                           Interval interval = POSITIVE_INTERVAL) const;
+  [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(
+      const Ray &ray, Interval interval = POSITIVE_INTERVAL) const;
+  std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersectionNode(const Node *node,
+                                                                                 const Ray &ray,
+                                                                                 Interval interval) const;
 
-  bool isInShadow(const Vector3D &point, const LightSource &light) const;
-  bool isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const;
+  void addShape(std::shared_ptr<Shape> shape);
 
-  static void printProgress(unsigned int current, unsigned int total, std::chrono::milliseconds elapsed = std::chrono::milliseconds(-1)) ;
+  [[nodiscard]] bool isInShadow(const Vector3D &point, const LightSource &light) const;
+  [[nodiscard]] bool isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const;
+
+  static void printProgress(unsigned int current,
+                            unsigned int total,
+                            std::chrono::milliseconds elapsed = std::chrono::milliseconds(-1));
+  static std::unique_ptr<Node> buildBspTree(std::vector<std::shared_ptr<Shape>>::iterator begin,
+                                     std::vector<std::shared_ptr<Shape>>::iterator end);
 };
 
 #endif //CGRAYTRACER_SCENE_H

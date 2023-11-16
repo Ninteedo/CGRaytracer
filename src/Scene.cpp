@@ -18,7 +18,9 @@ Scene::Scene(Colour colour,
       shapes(std::move(objects)),
       lightSources(std::move(lightSources)),
       nBounces(nBounces),
-      renderMode(renderMode) {}
+      renderMode(renderMode) {
+  buildBspTree();
+}
 
 Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json["camera"].asObject()) {
   std::string renderModeString = json["rendermode"].asString();
@@ -41,6 +43,7 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
   for (const auto &i : objectsJson) {
     shapes.push_back(Shape::fromJson(i.asObject()));
   }
+  buildBspTree();
 }
 
 Scene Scene::loadFromFile(const std::string &filename) {
@@ -394,10 +397,12 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
 
         // Specular Contribution
         double specularCoefficient = pow(std::max(normal.dot(halfDirection), 0.0), material.getSpecularExponent());
-        Colour specularContribution = Colour(material.getSpecularColour() * specularCoefficient * lightSource->getIntensity());
+        Colour specularContribution =
+            Colour(material.getSpecularColour() * specularCoefficient * lightSource->getIntensity());
 
         // Combine contributions
-        directIllumination += (diffuseContribution + specularContribution) / (lightSource->samplingFactor * distanceToLight * distanceToLight);
+        directIllumination += (diffuseContribution + specularContribution)
+            / (lightSource->samplingFactor * distanceToLight * distanceToLight);
       }
     }
   }
@@ -423,22 +428,69 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
   return {Colour(totalIllumination * (1 - reflectivity) + reflectionColour * reflectivity), hitDistance};
 }
 
-std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray,
-                                                                                  Interval interval) const {
+//std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray,
+//                                                                                  Interval interval) const {
+//  std::shared_ptr<Shape> closestShape = nullptr;
+//  double closestT = 0;
+//  for (const auto &shape : shapes) {
+//    std::optional<double> t = shape->checkIntersection(ray, interval);
+//    if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
+//      closestShape = shape;
+//      closestT = t.value();
+//      interval = Interval(interval.getMin(), closestT);
+//    }
+//  }
+//  if (closestShape == nullptr) {
+//    return std::nullopt;
+//  } else {
+//    return std::make_pair(closestShape, closestT);
+//  }
+//}
+
+std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray, Interval interval) const {
+  return checkIntersectionNode(bspTree.get(), ray, interval);
+}
+
+std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersectionNode(const Node* node, const Ray &ray, Interval interval) const {
+  if (node == nullptr) {
+    return std::nullopt;
+  }
+
   std::shared_ptr<Shape> closestShape = nullptr;
-  double closestT = 0;
-  for (const auto &shape : shapes) {
-    std::optional<double> t = shape->checkIntersection(ray, interval);
-    if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
-      closestShape = shape;
+  double closestT = std::numeric_limits<double>::infinity();
+
+  // Check intersection with the current node's shape
+  if (node->shape) {
+    auto t = node->shape->checkIntersection(ray, interval);
+    if (t && t.value() < closestT) {
+      closestShape = node->shape;
       closestT = t.value();
       interval = Interval(interval.getMin(), closestT);
     }
   }
-  if (closestShape == nullptr) {
-    return std::nullopt;
-  } else {
+
+  // Determine which child nodes to visit
+  // This involves checking the position of the ray relative to the node's splitting plane
+  // Pseudo-code: if (ray intersects with left plane) { ... }
+
+  // Recursively check intersections in the child nodes
+  auto leftResult = checkIntersectionNode(node->left.get(), ray, interval);
+  if (leftResult && leftResult.value().second < closestT) {
+    closestShape = leftResult.value().first;
+    closestT = leftResult.value().second;
+    interval = Interval(interval.getMin(), closestT);
+  }
+
+  auto rightResult = checkIntersectionNode(node->right.get(), ray, interval);
+  if (rightResult && rightResult.value().second < closestT) {
+    closestShape = rightResult.value().first;
+    closestT = rightResult.value().second;
+  }
+
+  if (closestShape) {
     return std::make_pair(closestShape, closestT);
+  } else {
+    return std::nullopt;
   }
 }
 
@@ -450,4 +502,37 @@ void Scene::printProgress(unsigned int current, unsigned int total, std::chrono:
   } else {
     std::cout << "\rRendering: " << progress << "% complete, " << elapsed.count() << "ms elapsed" << std::flush;
   }
+}
+
+void Scene::addShape(std::shared_ptr<Shape> shape) {
+  shapes.push_back(shape);
+  buildBspTree();
+}
+
+void Scene::buildBspTree() {
+  bspTree = buildBspTree(shapes.begin(), shapes.end());
+}
+
+std::unique_ptr<Node> Scene::buildBspTree(std::vector<std::shared_ptr<Shape>>::iterator begin,
+                                          std::vector<std::shared_ptr<Shape>>::iterator end) {
+  if (begin == end) {
+    return nullptr;
+  }
+
+  // Determine the splitting plane
+  // This is where you choose how to split your shapes
+  // For simplicity, let's split them at the median along one axis
+
+  auto middle = begin + std::distance(begin, end) / 2;
+  std::nth_element(begin, middle, end, [](const auto& a, const auto& b) {
+    // Compare shapes based on some criteria, e.g., their centroid's X-coordinate
+    return a->getCentroid().getX() < b->getCentroid().getX();
+  });
+
+  // Recursively build left and right subtrees
+  auto leftTree = buildBspTree(begin, middle);
+  auto rightTree = buildBspTree(middle + 1, end);
+
+  // Create a new node with the shape at 'middle' and the two subtrees
+  return std::make_unique<Node>(*middle, std::move(leftTree), std::move(rightTree));
 }
