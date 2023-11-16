@@ -127,7 +127,7 @@ Vector3D Vector3D::reflect(const Vector3D &normal, double roughness) const {
   return *this - normal * 2 * dot(normal) + roughnessVector;
 }
 
-Vector3D Vector3D::refract(const Vector3D &normal, double refractiveFactor) {
+Vector3D Vector3D::refract(const Vector3D &normal, double refractiveFactor) const {
   double cosTheta = fmin(-this->dot(normal), 1.0);
   double sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 
