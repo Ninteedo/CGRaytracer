@@ -10,6 +10,7 @@
 #include "Image.h"
 #include <random>
 #include <functional>
+#include <chrono>
 
 enum RenderMode {
   BINARY,
@@ -63,7 +64,7 @@ class Scene {
   bool isInShadow(const Vector3D &point, const LightSource &light) const;
   bool isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const;
 
-  static void printProgress(unsigned int current, unsigned int total) ;
+  static void printProgress(unsigned int current, unsigned int total, std::chrono::milliseconds elapsed = std::chrono::milliseconds(-1)) ;
 };
 
 #endif //CGRAYTRACER_SCENE_H

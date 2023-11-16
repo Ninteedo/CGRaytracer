@@ -117,6 +117,7 @@ Image Scene::renderPathtracer() {
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r).colour; };
 
   int done = 0;
+  auto start = std::chrono::high_resolution_clock::now();
 
   printProgress(0, camera.getHeight());
 
@@ -125,9 +126,11 @@ Image Scene::renderPathtracer() {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 25, colourSampler));
     }
-    printProgress(++done, camera.getHeight());
+    auto now = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+    printProgress(++done, camera.getHeight(), elapsed);
   }
-  printProgress(camera.getHeight(), camera.getHeight());
+//  printProgress(camera.getHeight(), camera.getHeight());
   return image;
 }
 
@@ -434,7 +437,11 @@ std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersectio
 }
 
 // Print the progress as a percentage as a whole number
-void Scene::printProgress(unsigned int current, unsigned int total) {
+void Scene::printProgress(unsigned int current, unsigned int total, std::chrono::milliseconds elapsed) {
   int progress = (int) (100.0 * current / total);
-  std::cout << "\rRendering: " << progress << "% complete" << std::flush;
+  if (elapsed < std::chrono::milliseconds(0)) {
+    std::cout << "\rRendering: " << progress << "% complete" << std::flush;
+  } else {
+    std::cout << "\rRendering: " << progress << "% complete, " << elapsed.count() << "ms elapsed" << std::flush;
+  }
 }
