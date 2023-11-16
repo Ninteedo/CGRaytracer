@@ -134,7 +134,7 @@ Image Scene::renderPathtracer() {
 #pragma omp parallel for num_threads(8) schedule(dynamic)
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
-      image.setColor(x, y, sample(x, y, 25, colourSampler));
+      image.setColor(x, y, sample(x, y, 100, colourSampler));
     }
     auto now = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
@@ -407,8 +407,20 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
     }
   }
 
+  // Russian Roulette termination
+  if (depth > 3) {
+    double terminationProbability = std::max(0.05, 1 - reflectionColour.max());
+    double randomValue = random_double();
+
+    if (randomValue < terminationProbability) {
+      return {Colour(directIllumination), hitDistance};
+    } else {
+      directIllumination = Colour(directIllumination / (1 - terminationProbability));
+    }
+  }
+
   // Indirect illumination
-  int nSamples = std::max(1, 8 - depth * 2);
+  int nSamples = std::max(1, 10 - depth * 2);
   Colour bounceColour(0, 0, 0);
   for (int i = 0; i < nSamples; i++) {
     // Get a random direction in the hemisphere of the normal

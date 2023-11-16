@@ -33,6 +33,9 @@ class Vector3D {
   [[nodiscard]] double getY() const;
   [[nodiscard]] double getZ() const;
 
+  [[nodiscard]] double max() const;
+  [[nodiscard]] double min() const;
+
   double operator[](int i) const;
 
   // Addition

@@ -29,6 +29,20 @@ double Vector3D::getZ() const {
   return _mm_cvtsd_f64(_mm256_extractf128_pd(data, 1));
 }
 
+double Vector3D::max() const {
+  __m128d high = _mm256_extractf128_pd(data, 0);
+  __m128d low = _mm256_castpd256_pd128(data);
+  __m128d max = _mm_max_pd(low, high);
+  return _mm_cvtsd_f64(_mm_max_pd(max, _mm_shuffle_pd(max, max, 1)));
+}
+
+double Vector3D::min() const {
+  __m128d high = _mm256_extractf128_pd(data, 0);
+  __m128d low = _mm256_castpd256_pd128(data);
+  __m128d min = _mm_min_pd(low, high);
+  return _mm_cvtsd_f64(_mm_min_pd(min, _mm_shuffle_pd(min, min, 1)));
+}
+
 double Vector3D::operator[](int i) const {
   switch (i) {
     case 0: return getX();
