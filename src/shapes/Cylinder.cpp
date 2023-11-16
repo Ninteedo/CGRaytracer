@@ -105,3 +105,7 @@ Vector3D Cylinder::getSurfaceNormal(Vector3D point) const {
   Vector3D normal = point - closestPointOnAxis;
   return normal.normalize();
 }
+
+Vector3D Cylinder::getCentroid() const {
+  return centre;
+}

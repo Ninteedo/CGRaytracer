@@ -21,6 +21,8 @@ class Cylinder : public Shape {
   [[nodiscard]] std::optional<double> checkIntersection(Ray ray, Interval interval) const override;
 
   [[nodiscard]] Vector3D getSurfaceNormal(Vector3D point) const override;
+
+  [[nodiscard]] Vector3D getCentroid() const override;
 };
 
 #endif //CGRAYTRACER_CYLINDER_H

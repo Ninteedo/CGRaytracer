@@ -24,6 +24,8 @@ class Shape {
   [[nodiscard]] virtual std::optional<double> checkIntersection(Ray ray, Interval interval) const = 0;
 
   [[nodiscard]] virtual Vector3D getSurfaceNormal(Vector3D point) const = 0;
+
+  [[nodiscard]] virtual Vector3D getCentroid() const = 0;
 };
 
 #endif //CGRAYTRACER_OBJECT_H

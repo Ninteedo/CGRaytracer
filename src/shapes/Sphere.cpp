@@ -34,3 +34,7 @@ std::optional<double> Sphere::checkIntersection(Ray ray, Interval interval) cons
 Vector3D Sphere::getSurfaceNormal(Vector3D point) const {
   return (point - centre) / radius;
 }
+
+Vector3D Sphere::getCentroid() const {
+  return centre;
+}
