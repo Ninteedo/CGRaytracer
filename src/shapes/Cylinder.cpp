@@ -109,3 +109,21 @@ Vector3D Cylinder::getSurfaceNormal(Vector3D point) const {
 Vector3D Cylinder::getCentroid() const {
   return centre;
 }
+
+AABB Cylinder::getAABB() const {
+  Vector3D p1 = centre - axis * height;
+  Vector3D p2 = centre + axis * height;
+
+  Vector3D minPoint(
+      std::min(p1.getX(), p2.getX()) - radius,
+      std::min(p1.getY(), p2.getY()) - radius,
+      std::min(p1.getZ(), p2.getZ()) - radius
+  );
+  Vector3D maxPoint(
+      std::max(p1.getX(), p2.getX()) + radius,
+      std::max(p1.getY(), p2.getY()) + radius,
+      std::max(p1.getZ(), p2.getZ()) + radius
+  );
+
+  return {minPoint, maxPoint};
+}

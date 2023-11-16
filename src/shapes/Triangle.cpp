@@ -1,7 +1,7 @@
 #include "Triangle.h"
 #include "../Interval.h"
 
-Triangle::Triangle(const Vector3D& v0, const Vector3D& v1, const Vector3D& v2, const Material& material)
+Triangle::Triangle(const Vector3D &v0, const Vector3D &v1, const Vector3D &v2, const Material &material)
     : v0(v0), v1(v1), v2(v2), Shape(material) {}
 
 Triangle::Triangle(JsonObject json)
@@ -44,4 +44,18 @@ Vector3D Triangle::getSurfaceNormal(Vector3D point) const {
 
 Vector3D Triangle::getCentroid() const {
   return (v0 + v1 + v2) / 3;
+}
+
+AABB Triangle::getAABB() const {
+  Vector3D min(
+      std::min(std::min(v0.getX(), v1.getX()), v2.getX()),
+      std::min(std::min(v0.getY(), v1.getY()), v2.getY()),
+      std::min(std::min(v0.getZ(), v1.getZ()), v2.getZ())
+  );
+  Vector3D max(
+      std::max(std::max(v0.getX(), v1.getX()), v2.getX()),
+      std::max(std::max(v0.getY(), v1.getY()), v2.getY()),
+      std::max(std::max(v0.getZ(), v1.getZ()), v2.getZ())
+  );
+  return {min, max};
 }

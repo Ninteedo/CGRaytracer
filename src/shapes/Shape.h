@@ -5,6 +5,7 @@
 #include "../Material.h"
 #include "../Ray.h"
 #include "../Interval.h"
+#include "../AABB.h"
 #include <memory>
 #include <optional>
 
@@ -26,6 +27,8 @@ class Shape {
   [[nodiscard]] virtual Vector3D getSurfaceNormal(Vector3D point) const = 0;
 
   [[nodiscard]] virtual Vector3D getCentroid() const = 0;
+
+  [[nodiscard]] virtual AABB getAABB() const = 0;
 };
 
 #endif //CGRAYTRACER_OBJECT_H

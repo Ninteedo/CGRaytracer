@@ -38,3 +38,7 @@ Vector3D Sphere::getSurfaceNormal(Vector3D point) const {
 Vector3D Sphere::getCentroid() const {
   return centre;
 }
+
+AABB Sphere::getAABB() const {
+  return {centre - Vector3D(radius, radius, radius), centre + Vector3D(radius, radius, radius)};
+}

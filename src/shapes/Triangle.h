@@ -20,6 +20,8 @@ class Triangle : public Shape {
   [[nodiscard]] Vector3D getSurfaceNormal(Vector3D point) const override;
 
   [[nodiscard]] Vector3D getCentroid() const override;
+
+  [[nodiscard]] AABB getAABB() const override;
 };
 
 #endif // CGRAYTRACER_TRIANGLE_H
