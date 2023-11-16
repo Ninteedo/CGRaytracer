@@ -505,26 +505,65 @@ std::unique_ptr<Node> Scene::buildBspTree(std::vector<std::shared_ptr<Shape>>::i
     return nullptr;
   }
 
-  // Determine the splitting plane
-  // This is where you choose how to split your shapes
-  // For simplicity, split them at the median along one axis
-
-  auto middle = begin + std::distance(begin, end) / 2;
-  // Sort shapes based on the centroid of their AABBs
-  std::nth_element(begin, middle, end, [](const auto& a, const auto& b) {
-    return a->getAABB().getCentroid().getX() < b->getAABB().getCentroid().getX();
-  });
-
-  // Create an encapsulating AABB
-  AABB aabb = (*begin)->getAABB();
-  for (auto it = begin; it != end; ++it) {
-    aabb = aabb.encapsulate((*it)->getAABB());
+  // Calculate the AABB for the entire set of shapes
+  AABB totalAABB = (*begin)->getAABB();
+  for (auto it = begin + 1; it != end; ++it) {
+    totalAABB = totalAABB.encapsulate((*it)->getAABB());
   }
 
-  // Recursively build left and right subtrees
-  auto leftTree = buildBspTree(begin, middle);
-  auto rightTree = buildBspTree(middle + 1, end);
+  // Initialize SAH variables
+  double bestCost = std::numeric_limits<double>::infinity();
+  auto bestSplit = begin;
+  int bestAxis = -1;
 
-  // Create a new node with the shape at 'middle' and the two subtrees
-  return std::make_unique<Node>(*middle, aabb, std::move(leftTree), std::move(rightTree));
+  // Constants for SAH cost calculation
+  const double C_trav = 1.0; // Cost of traversing a node
+  const double C_inter = 1.0; // Cost of an intersection test
+
+  // Iterate over each axis
+  for (int axis = 0; axis < 3; ++axis) {
+    // Sort shapes based on the centroid of their AABBs along the current axis
+    std::sort(begin, end, [axis](const auto& a, const auto& b) {
+      return a->getAABB().getCentroid()[axis] < b->getAABB().getCentroid()[axis];
+    });
+
+    // Calculate SAH cost for each split position
+    for (auto mid = begin + 1; mid < end; ++mid) {
+      AABB leftAABB = (*begin)->getAABB();
+      AABB rightAABB = (*mid)->getAABB();
+      for (auto it = begin; it != mid; ++it) leftAABB = leftAABB.encapsulate((*it)->getAABB());
+      for (auto it = mid; it != end; ++it) rightAABB = rightAABB.encapsulate((*it)->getAABB());
+
+      double leftArea = leftAABB.surfaceArea();
+      double rightArea = rightAABB.surfaceArea();
+      double totalArea = totalAABB.surfaceArea();
+      int N_left = std::distance(begin, mid);
+      int N_right = std::distance(mid, end);
+
+      double cost = C_trav + ((leftArea / totalArea) * N_left + (rightArea / totalArea) * N_right) * C_inter;
+
+      if (cost < bestCost) {
+        bestCost = cost;
+        bestSplit = mid;
+        bestAxis = axis;
+      }
+    }
+  }
+
+  // If no suitable split was found, create a leaf node
+  if (bestAxis == -1) {
+    return std::make_unique<Node>(*begin, totalAABB, nullptr, nullptr);
+  }
+
+  // Sort shapes one final time along the best axis
+  std::sort(begin, end, [bestAxis](const auto& a, const auto& b) {
+    return a->getAABB().getCentroid()[bestAxis] < b->getAABB().getCentroid()[bestAxis];
+  });
+
+  // Recursively build left and right subtrees
+  auto leftTree = buildBspTree(begin, bestSplit);
+  auto rightTree = buildBspTree(bestSplit, end);
+
+  // Create a new node with the best split
+  return std::make_unique<Node>(nullptr, totalAABB, std::move(leftTree), std::move(rightTree));
 }

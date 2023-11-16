@@ -19,6 +19,8 @@ class AABB {
   [[nodiscard]] Vector3D getCentroid() const;
 
   [[nodiscard]] AABB encapsulate(const AABB& other) const;
+
+  [[nodiscard]] double surfaceArea();
 };
 
 #endif //CGRAYTRACER_SRC_AABB_H_

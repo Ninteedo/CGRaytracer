@@ -68,3 +68,10 @@ AABB AABB::encapsulate(const AABB &other) const {
       )
   };
 }
+
+double AABB::surfaceArea() {
+  double length = max.getX() - min.getX();
+  double width  = max.getY() - min.getY();
+  double height = max.getZ() - min.getZ();
+  return 2.0 * (length * width + width * height + height * length);
+}
