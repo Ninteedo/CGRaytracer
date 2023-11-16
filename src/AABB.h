@@ -19,6 +19,10 @@ class AABB {
   [[nodiscard]] bool inVolume(const Vector3D& point) const;
 
   [[nodiscard]] bool intersects(const Ray& ray, Interval interval) const;
+
+  [[nodiscard]] Vector3D getCentroid() const;
+
+  [[nodiscard]] AABB encapsulate(const AABB& other) const;
 };
 
 #endif //CGRAYTRACER_SRC_AABB_H_

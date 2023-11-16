@@ -43,3 +43,22 @@ bool AABB::intersects(const Ray& ray, Interval interval) const {
 
   return (tmin < interval.getMax() && tmax > interval.getMin());
 }
+
+Vector3D AABB::getCentroid() const {
+  return (min + max) / 2;
+}
+
+AABB AABB::encapsulate(const AABB &other) const {
+    return {
+        Vector3D(
+            std::min(min.getX(), other.getMin().getX()),
+            std::min(min.getY(), other.getMin().getY()),
+            std::min(min.getZ(), other.getMin().getZ())
+        ),
+        Vector3D(
+            std::max(max.getX(), other.getMax().getX()),
+            std::max(max.getY(), other.getMax().getY()),
+            std::max(max.getZ(), other.getMax().getZ())
+        )
+    };
+}

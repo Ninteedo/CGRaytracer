@@ -428,31 +428,17 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
   return {Colour(totalIllumination * (1 - reflectivity) + reflectionColour * reflectivity), hitDistance};
 }
 
-//std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray,
-//                                                                                  Interval interval) const {
-//  std::shared_ptr<Shape> closestShape = nullptr;
-//  double closestT = 0;
-//  for (const auto &shape : shapes) {
-//    std::optional<double> t = shape->checkIntersection(ray, interval);
-//    if (t.has_value() && (t.value() < closestT || closestShape == nullptr)) {
-//      closestShape = shape;
-//      closestT = t.value();
-//      interval = Interval(interval.getMin(), closestT);
-//    }
-//  }
-//  if (closestShape == nullptr) {
-//    return std::nullopt;
-//  } else {
-//    return std::make_pair(closestShape, closestT);
-//  }
-//}
-
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray, Interval interval) const {
   return checkIntersectionNode(bspTree.get(), ray, interval);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersectionNode(const Node* node, const Ray &ray, Interval interval) const {
   if (node == nullptr) {
+    return std::nullopt;
+  }
+
+  if (!node->aabb.intersects(ray, interval)) {
+    // Quick rejection if the ray doesn't intersect the node's AABB
     return std::nullopt;
   }
 
@@ -521,18 +507,24 @@ std::unique_ptr<Node> Scene::buildBspTree(std::vector<std::shared_ptr<Shape>>::i
 
   // Determine the splitting plane
   // This is where you choose how to split your shapes
-  // For simplicity, let's split them at the median along one axis
+  // For simplicity, split them at the median along one axis
 
   auto middle = begin + std::distance(begin, end) / 2;
+  // Sort shapes based on the centroid of their AABBs
   std::nth_element(begin, middle, end, [](const auto& a, const auto& b) {
-    // Compare shapes based on some criteria, e.g., their centroid's X-coordinate
-    return a->getCentroid().getX() < b->getCentroid().getX();
+    return a->getAABB().getCentroid().getX() < b->getAABB().getCentroid().getX();
   });
+
+  // Create an encapsulating AABB
+  AABB aabb = (*begin)->getAABB();
+  for (auto it = begin; it != end; ++it) {
+    aabb = aabb.encapsulate((*it)->getAABB());
+  }
 
   // Recursively build left and right subtrees
   auto leftTree = buildBspTree(begin, middle);
   auto rightTree = buildBspTree(middle + 1, end);
 
   // Create a new node with the shape at 'middle' and the two subtrees
-  return std::make_unique<Node>(*middle, std::move(leftTree), std::move(rightTree));
+  return std::make_unique<Node>(*middle, aabb, std::move(leftTree), std::move(rightTree));
 }

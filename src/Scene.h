@@ -11,6 +11,7 @@
 #include <random>
 #include <functional>
 #include <chrono>
+#include <utility>
 
 enum RenderMode {
   BINARY,
@@ -26,11 +27,12 @@ struct SampleRecord {
 class Node {
  public:
   std::shared_ptr<Shape> shape;
+  AABB aabb;
   std::unique_ptr<Node> left;
   std::unique_ptr<Node> right;
 
-  Node(std::shared_ptr<Shape> shape, std::unique_ptr<Node> left, std::unique_ptr<Node> right)
-      : shape(std::move(shape)), left(std::move(left)), right(std::move(right)) {}
+  Node(std::shared_ptr<Shape> shape, AABB aabb, std::unique_ptr<Node> left, std::unique_ptr<Node> right)
+      : shape(std::move(shape)), aabb(std::move(aabb)), left(std::move(left)), right(std::move(right)) {}
 
 };
 
