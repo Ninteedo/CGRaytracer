@@ -101,13 +101,20 @@ Image Scene::renderBlinnPhong() {
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleBlinnPhong(r); };
 
+  int done = 0;
+  auto start = std::chrono::high_resolution_clock::now();
+
+  printProgress(0, camera.getHeight());
+
+#pragma omp parallel for num_threads(8) schedule(dynamic)
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
-    printProgress(y, camera.getHeight());
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 8, colourSampler));
     }
+    auto now = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+    printProgress(++done, camera.getHeight(), elapsed);
   }
-  printProgress(camera.getHeight(), camera.getHeight());
   return image;
 }
 
@@ -121,7 +128,7 @@ Image Scene::renderPathtracer() {
 
   printProgress(0, camera.getHeight());
 
-  #pragma omp parallel for num_threads(8) schedule(dynamic)
+#pragma omp parallel for num_threads(8) schedule(dynamic)
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 25, colourSampler));
@@ -130,7 +137,6 @@ Image Scene::renderPathtracer() {
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
     printProgress(++done, camera.getHeight(), elapsed);
   }
-//  printProgress(camera.getHeight(), camera.getHeight());
   return image;
 }
 
@@ -327,7 +333,7 @@ bool Scene::isInShadow(const Vector3D &point, const LightSource &light) const {
 }
 
 bool Scene::isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const {
-  Interval interval = Interval(EPSILON, maxDistance);
+  Interval interval = Interval(0.0001, maxDistance);
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(shadowRay, interval);
   return intersection.has_value();
 }
