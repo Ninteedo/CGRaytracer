@@ -65,7 +65,7 @@ class Scene {
   Image renderBlinnPhong();
   Image renderPathtracer();
 
-  Colour sample(unsigned int x, unsigned int y, int nSamples, const std::function<Colour(const Scene &,
+  Colour sample(int x, int y, int nSamples, const std::function<Colour(const Scene &,
                                                                                          const Ray &)> &sampleFunction);
 
   Colour sampleShaded(const Ray &ray, int depth = 0);
@@ -85,8 +85,8 @@ class Scene {
   [[nodiscard]] bool isInShadow(const Vector3D &point, const LightSource &light) const;
   [[nodiscard]] bool isInShadow(const Ray &shadowRay, double maxDistance, const LightSource &light) const;
 
-  static void printProgress(unsigned int current,
-                            unsigned int total,
+  static void printProgress(int current,
+                            int total,
                             std::chrono::milliseconds elapsed = std::chrono::milliseconds(-1));
   static std::unique_ptr<Node> buildBspTree(std::vector<std::shared_ptr<Shape>>::iterator begin,
                                      std::vector<std::shared_ptr<Shape>>::iterator end);

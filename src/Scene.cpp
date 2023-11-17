@@ -66,8 +66,8 @@ Image Scene::render() {
 Image Scene::renderBinary() {
   Image image(camera.getWidth(), camera.getHeight());
 
-  for (unsigned int y = 0; y < camera.getHeight(); y++) {
-    for (unsigned int x = 0; x < camera.getWidth(); x++) {
+  for (int y = 0; y < camera.getHeight(); y++) {
+    for (int x = 0; x < camera.getWidth(); x++) {
       Ray ray = camera.getRay(x, y);
       std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
 
@@ -89,9 +89,9 @@ Image Scene::renderShaded() {
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuseAndSpecular(r); };
 
-  for (unsigned int y = 0; y < camera.getHeight(); y++) {
+  for (int y = 0; y < camera.getHeight(); y++) {
     printProgress(y, camera.getHeight());
-    for (unsigned int x = 0; x < camera.getWidth(); x++) {
+    for (int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 8, colourSampler));
     }
   }
@@ -110,8 +110,8 @@ Image Scene::renderBlinnPhong() {
   printProgress(0, camera.getHeight());
 
 #pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done)
-  for (unsigned int y = 0; y < camera.getHeight(); y++) {
-    for (unsigned int x = 0; x < camera.getWidth(); x++) {
+  for (int y = 0; y < camera.getHeight(); y++) {
+    for (int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 8, colourSampler));
     }
     auto now = std::chrono::high_resolution_clock::now();
@@ -132,8 +132,8 @@ Image Scene::renderPathtracer() {
   printProgress(0, camera.getHeight());
 
 #pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done)
-  for (unsigned int y = 0; y < camera.getHeight(); y++) {
-    for (unsigned int x = 0; x < camera.getWidth(); x++) {
+  for (int y = 0; y < camera.getHeight(); y++) {
+    for (int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 100, colourSampler));
     }
     auto now = std::chrono::high_resolution_clock::now();
@@ -143,8 +143,8 @@ Image Scene::renderPathtracer() {
   return image;
 }
 
-Colour Scene::sample(unsigned int x,
-                     unsigned int y,
+Colour Scene::sample(int x,
+                     int y,
                      int nSamples,
                      const std::function<Colour(const Scene &, const Ray &)> &sampleFunction) {
   Colour pixelColour;
@@ -493,7 +493,7 @@ std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersectio
 }
 
 // Print the progress as a percentage as a whole number
-void Scene::printProgress(unsigned int current, unsigned int total, std::chrono::milliseconds elapsed) {
+void Scene::printProgress(int current, int total, std::chrono::milliseconds elapsed) {
   int progress = (int) (100.0 * current / total);
   if (elapsed < std::chrono::milliseconds(0)) {
     std::cout << "\rRendering: " << progress << "% complete" << std::flush;

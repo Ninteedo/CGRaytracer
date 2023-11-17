@@ -4,36 +4,36 @@
 #include <stdexcept>
 #include <sstream>
 
-Image::Image(unsigned int width, unsigned int height)
+Image::Image(int width, int height)
     : width(width), height(height) {
   pixels.resize(width * height);
 }
 
 Image::~Image() = default;
 
-Colour Image::getColor(unsigned int x, unsigned int y) const {
+Colour Image::getColor(int x, int y) const {
   if (!isInside(x, y)) {
     throw std::out_of_range("Coordinates are out of range");
   }
   return *pixels[y * width + x];
 }
 
-void Image::setColor(unsigned int x, unsigned int y, const Colour &colour) {
+void Image::setColor(int x, int y, const Colour &colour) {
   if (!isInside(x, y)) {
     throw std::out_of_range("Coordinates are out of range");
   }
   pixels[y * width + x] = std::make_shared<Colour>(colour);
 }
 
-unsigned int Image::getWidth() const {
+int Image::getWidth() const {
   return width;
 }
 
-unsigned int Image::getHeight() const {
+int Image::getHeight() const {
   return height;
 }
 
-bool Image::isInside(unsigned int x, unsigned int y) const {
+bool Image::isInside(int x, int y) const {
   return x < width && y < height;
 }
 
@@ -49,8 +49,8 @@ void Image::saveToPPM(const std::string &filename) const {
   file << "255\n";                      // Maximum color value
 
   // Image data
-  for (unsigned int y = 0; y < height; ++y) {
-    for (unsigned int x = 0; x < width; ++x) {
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
       file << getColor(x, y).toPPM() << "\t";
     }
     file << "\n";
