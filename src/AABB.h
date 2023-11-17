@@ -20,7 +20,7 @@ class AABB {
 
   [[nodiscard]] AABB encapsulate(const AABB& other) const;
 
-  [[nodiscard]] double surfaceArea();
+  [[nodiscard]] double surfaceArea() const;
 };
 
 #endif //CGRAYTRACER_SRC_AABB_H_

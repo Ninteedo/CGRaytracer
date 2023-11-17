@@ -22,18 +22,14 @@ bool AABB::intersects(const Ray &ray, Interval interval) const {
   double tMin = NEGATIVE_INFINITY;
   double tMax = POSITIVE_INFINITY;
 
-  for (int i = 0; i < 3; ++i) {
-    if (std::abs(ray.direction[i]) < AUTO_EPSILON && (ray.origin[i] < min[i] || ray.origin[i] > max[i])) {
-      // Ray is parallel to the slab. No hit if origin not within slab
-      return false;
-    }
-  }
+//  for (int i = 0; i < 3; ++i) {
+//    if (std::abs(ray.direction[i]) < AUTO_EPSILON && (ray.origin[i] < min[i] || ray.origin[i] > max[i])) {
+//      // Ray is parallel to the slab. No hit if origin not within slab
+//      return false;
+//    }
+//  }
 
-  Vector3D inverseDirection = Vector3D(
-      1 / ray.direction.getX(),
-      1 / ray.direction.getY(),
-      1 / ray.direction.getZ()
-  );
+  Vector3D inverseDirection = ray.inverseDirection;
 
   // Check each axis
   for (int i = 0; i < 3; ++i) {
@@ -69,7 +65,7 @@ AABB AABB::encapsulate(const AABB &other) const {
   };
 }
 
-double AABB::surfaceArea() {
+double AABB::surfaceArea() const {
   double length = max.getX() - min.getX();
   double width  = max.getY() - min.getY();
   double height = max.getZ() - min.getZ();

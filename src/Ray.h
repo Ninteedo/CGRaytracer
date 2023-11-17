@@ -8,6 +8,7 @@ class Ray {
  public:
   const Vector3D origin; // Origin of the ray (A)
   const Vector3D direction; // Direction of the ray (B)
+  const Vector3D inverseDirection; // Inverse of the direction of the ray (1/B)
 
   // Parameterized constructor
   Ray(const Vector3D &origin, const Vector3D &direction);

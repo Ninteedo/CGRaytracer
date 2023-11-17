@@ -2,7 +2,8 @@
 
 // Parameterized constructor
 Ray::Ray(const Vector3D &origin, const Vector3D &direction)
-    : origin(origin), direction(direction) {}
+    : origin(origin), direction(direction),
+    inverseDirection(1 / direction.getX(), 1 / direction.getY(), 1 / direction.getZ()) {}
 
 // Copy constructor
 Ray::Ray(const Ray &other) = default;
