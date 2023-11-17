@@ -109,7 +109,7 @@ Image Scene::renderBlinnPhong() {
 
   printProgress(0, camera.getHeight());
 
-#pragma omp parallel for num_threads(8) schedule(dynamic)
+#pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done)
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 8, colourSampler));
@@ -131,7 +131,7 @@ Image Scene::renderPathtracer() {
 
   printProgress(0, camera.getHeight());
 
-#pragma omp parallel for num_threads(8) schedule(dynamic)
+#pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done)
   for (unsigned int y = 0; y < camera.getHeight(); y++) {
     for (unsigned int x = 0; x < camera.getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 100, colourSampler));
