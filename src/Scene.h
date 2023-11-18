@@ -90,6 +90,7 @@ class Scene {
                             std::chrono::milliseconds elapsed = std::chrono::milliseconds(-1));
   static std::unique_ptr<Node> buildBspTree(std::vector<std::shared_ptr<Shape>>::iterator begin,
                                      std::vector<std::shared_ptr<Shape>>::iterator end);
+  Colour isInShadowPathtracer(const Ray &shadowRay, double maxDistance, const LightSource &light) const;
 };
 
 #endif //CGRAYTRACER_SCENE_H

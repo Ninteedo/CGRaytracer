@@ -305,22 +305,15 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
                         + reflectSample * material.getReflectivity());
   }
   if (material.getIsRefractive()) {
+    Vector3D refractDir;
     if (isExitRay) {
-      Vector3D refractDir =
-          ray.direction.refract(-normal, 1 / material.getRefractiveIndex()).normalize();
-      Ray refractRay(hitPoint, refractDir);
-      auto refractIntersection = checkIntersection(refractRay);
-      Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
-      colour = refractSample;
-
+      refractDir = ray.direction.refract(normal, 1 / material.getRefractiveIndex()).normalize();
     } else {
-      Vector3D refractDir =
-          ray.direction.refract(normal, material.getRefractiveIndex()).normalize();
-      Ray refractRay(hitPoint, refractDir);
-      auto refractIntersection = checkIntersection(refractRay);
-      Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
-      colour = refractSample;
+      refractDir = ray.direction.refract(normal, material.getRefractiveIndex()).normalize();
     }
+    Ray refractRay(hitPoint, refractDir);
+    Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
+    colour = refractSample;
   }
 
   // Clamp colour values to ensure they are within the valid range
@@ -339,6 +332,43 @@ bool Scene::isInShadow(const Ray &shadowRay, double maxDistance, const LightSour
   Interval interval = Interval(0.0001, maxDistance);
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(shadowRay, interval);
   return intersection.has_value();
+}
+
+Colour Scene::isInShadowPathtracer(const Ray &shadowRay, double maxDistance, const LightSource &light) const {
+  Interval interval = Interval(0.0001, maxDistance);
+  std::unique_ptr<Ray> currentRay = std::make_unique<Ray>(shadowRay);
+  Colour result = Colour(light.getIntensity());
+
+  while (true) {
+    auto intersection = checkIntersection(*currentRay, interval);
+    if (!intersection.has_value()) {
+      return result;
+    }
+
+    auto [hitShape, hitDistance] = intersection.value();
+    Vector3D hitPoint = currentRay->at(hitDistance);
+    Material material = hitShape->getMaterial();
+
+    if (material.getIsRefractive()) {
+      // Calculate the refractive ray
+      double refractiveIndex = material.getRefractiveIndex();
+      Vector3D normal = hitShape->getSurfaceNormal(hitPoint);
+      bool isExitRay = currentRay->direction.dot(normal) > 0;
+      Vector3D refractDirection;
+      if (isExitRay) {
+        refractDirection = currentRay->direction.refract(-normal, 1 / refractiveIndex).normalize();
+      } else {
+        refractDirection = currentRay->direction.refract(normal, refractiveIndex).normalize();
+      }
+
+      currentRay = std::make_unique<Ray>(Ray(hitPoint + refractDirection, refractDirection));
+//      result *= material.getTransparency(); // Accumulate transparency of refractive materials
+      result = Colour(result * 0.9);
+      interval = Interval(0.0001, maxDistance - hitDistance);
+    } else {
+      return Colour(0, 0, 0);
+    }
+  }
 }
 
 SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
@@ -375,6 +405,23 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
     }
   }
 
+  // Refraction
+  Colour refractionColour(0, 0, 0);
+  if (material.getIsRefractive()) {
+    double refractiveIndex = material.getRefractiveIndex();
+    Vector3D refractDirection;
+    bool isExitRay = ray.direction.dot(normal) > 0;
+    if (isExitRay) {
+      refractDirection = ray.direction.refract(-normal, 1 / refractiveIndex);
+    } else {
+      refractDirection = ray.direction.refract(normal, refractiveIndex);
+    }
+    refractDirection = (refractDirection + normal.randomInHemisphere() * material.getRoughness()).normalize();
+    Ray refractRay(hitPoint, refractDirection);
+    auto [newRefractionColour, refractionDistance] = samplePathtracer(refractRay, depth + 1);
+    refractionColour = newRefractionColour;
+  }
+
   // Diffuse illumination
 
   // Get the diffuse factor and backgroundColour of the object
@@ -389,16 +436,18 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
       Vector3D lightDirection = toLight.normalize();
       Vector3D halfDirection = (lightDirection + ray.direction).normalize();
 
-      if (!isInShadow(Ray(hitPoint, toLight), distanceToLight, *lightSource)) {
+      Colour lightIntensity = isInShadowPathtracer(Ray(hitPoint, toLight), distanceToLight, *lightSource);
+
+      if (lightIntensity.max() > 0) {
         // Compute the illumination contribution
         // Diffuse Contribution
         double lambertian = std::min(std::max(normal.dot(toLight), 0.0), 1.0);
-        Colour diffuseContribution = Colour(diffuseColour * lambertian * diffuseFactor * lightSource->getIntensity());
+        Colour diffuseContribution = Colour(diffuseColour * lambertian * diffuseFactor * lightIntensity);
 
         // Specular Contribution
         double specularCoefficient = pow(std::max(normal.dot(halfDirection), 0.0), material.getSpecularExponent());
         Colour specularContribution =
-            Colour(material.getSpecularColour() * specularCoefficient * lightSource->getIntensity());
+            Colour(material.getSpecularColour() * specularCoefficient * lightIntensity);
 
         // Combine contributions
         directIllumination += (diffuseContribution + specularContribution)
@@ -424,10 +473,10 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
   Colour bounceColour(0, 0, 0);
   for (int i = 0; i < nSamples; i++) {
     // Get a random direction in the hemisphere of the normal
-    Vector3D bounceDirection = normal + normal.randomInHemisphere();
+    Vector3D bounceDirection = normal + normal.randomInHemisphere();  // * material.getKd();
 
     // Create a new ray starting at the intersection point and going in the bounce direction
-    Ray bounceRay = Ray(ray.at(hitDistance), bounceDirection);
+    Ray bounceRay = Ray(ray.at(hitDistance), bounceDirection.normalize());
 
     auto [newBounceColour, bounceDistance] = samplePathtracer(bounceRay, depth + 1);
 
@@ -435,9 +484,20 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
     bounceColour += Colour(newBounceColour / nSamples);  // (nSamples * bounceDistance * bounceDistance));
   }
 
-  Colour totalIllumination = Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
-
-  return {Colour(totalIllumination * (1 - reflectivity) + reflectionColour * reflectivity), hitDistance};
+  if (!material.getIsRefractive()) {
+    Colour totalIllumination = Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
+    return {Colour(
+        totalIllumination * (1 - reflectivity)
+            + reflectionColour * reflectivity
+    ), hitDistance};
+  } else {
+    Colour totalIllumination = Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
+    return {Colour(
+        totalIllumination * reflectivity
+            + reflectionColour * reflectivity
+            + refractionColour * (1 - reflectivity)
+    ), hitDistance};
+  }
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray, Interval interval) const {
