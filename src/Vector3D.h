@@ -33,6 +33,8 @@ class Vector3D {
   [[nodiscard]] double getY() const;
   [[nodiscard]] double getZ() const;
 
+  [[nodiscard]] __m256d getData() const;
+
   [[nodiscard]] double max() const;
   [[nodiscard]] double min() const;
 

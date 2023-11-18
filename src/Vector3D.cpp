@@ -29,6 +29,10 @@ double Vector3D::getZ() const {
   return _mm_cvtsd_f64(_mm256_extractf128_pd(data, 1));
 }
 
+__m256d Vector3D::getData() const {
+  return data;
+}
+
 double Vector3D::max() const {
   __m128d high = _mm256_extractf128_pd(data, 0);
   __m128d low = _mm256_castpd256_pd128(data);
@@ -82,7 +86,8 @@ Vector3D Vector3D::operator+=(const Vector3D &v) {
 }
 
 bool Vector3D::operator==(const Vector3D &v) const {
-  return getX() == v.getX() && getY() == v.getY() && getZ() == v.getZ();
+  __m256d cmp = _mm256_cmp_pd(this->data, v.data, _CMP_EQ_OQ);
+  return _mm256_testc_pd(cmp, _mm256_set1_pd(-1.0));
 }
 
 bool Vector3D::operator!=(const Vector3D &v) const {
