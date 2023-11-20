@@ -12,10 +12,11 @@ class Cylinder : public Shape {
   Vector3D axis;
   double radius;
   double height;
+  Material topMaterial, bottomMaterial;
 
  public:
   Cylinder(const Vector3D& centre, const Vector3D& axis, double radius, double height,
-           const Material& material);
+           const Material& material, const Material& topMaterial, const Material& bottomMaterial);
   explicit Cylinder(JsonObject json);
 
   [[nodiscard]] std::optional<double> checkIntersection(Ray ray, Interval interval) const override;
@@ -25,6 +26,8 @@ class Cylinder : public Shape {
   [[nodiscard]] Vector3D getCentroid() const override;
 
   [[nodiscard]] AABB getAABB() const override;
+
+  [[nodiscard]] std::optional<Vector2D> getUVCoordinates(Vector3D point) const override;
 };
 
 #endif //CGRAYTRACER_CYLINDER_H

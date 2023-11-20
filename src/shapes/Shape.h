@@ -6,6 +6,7 @@
 #include "../Ray.h"
 #include "../Interval.h"
 #include "../AABB.h"
+#include "../Vector2D.h"
 #include <memory>
 #include <optional>
 
@@ -20,7 +21,7 @@ class Shape {
   // The class corresponds to the type field in the JSON.
   static std::shared_ptr<Shape> fromJson(JsonObject json);
 
-  Material getMaterial() const;
+  [[nodiscard]] Material getMaterial() const;
 
   [[nodiscard]] virtual std::optional<double> checkIntersection(Ray ray, Interval interval) const = 0;
 
@@ -29,6 +30,8 @@ class Shape {
   [[nodiscard]] virtual Vector3D getCentroid() const = 0;
 
   [[nodiscard]] virtual AABB getAABB() const = 0;
+
+  [[nodiscard]] virtual std::optional<Vector2D> getUVCoordinates(Vector3D point) const = 0;
 };
 
 #endif //CGRAYTRACER_OBJECT_H

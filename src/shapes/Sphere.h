@@ -21,6 +21,8 @@ class Sphere : public Shape {
   [[nodiscard]] Vector3D getCentroid() const override;
 
   [[nodiscard]] AABB getAABB() const override;
+
+  [[nodiscard]] std::optional<Vector2D> getUVCoordinates(Vector3D point) const override;
 };
 
 #endif //CGRAYTRACER_SPHERE_H

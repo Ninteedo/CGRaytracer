@@ -42,3 +42,10 @@ Vector3D Sphere::getCentroid() const {
 AABB Sphere::getAABB() const {
   return {centre - Vector3D(radius, radius, radius), centre + Vector3D(radius, radius, radius)};
 }
+
+std::optional<Vector2D> Sphere::getUVCoordinates(Vector3D point) const {
+  Vector3D p = point - centre;  // Translate the point to the sphere's local space
+  double u = 0.5 + atan2(p.getZ(), p.getX()) / (2 * M_PI);
+  double v = 0.5 - asin(p.getY() / radius) / M_PI;
+  return Vector2D(u, v);
+}
