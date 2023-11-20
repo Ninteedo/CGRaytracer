@@ -10,7 +10,7 @@ Image::Image(int width, int height)
 }
 
 Image::Image(const std::string &filename) {
-  std::ifstream file(filename);
+  std::ifstream file("../scenes/" + filename);
 
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open the file for reading");
@@ -43,21 +43,32 @@ Image::Image(const std::string &filename) {
 
   // Read the pixel data
   int r, g, b;
+  double scalar = 1.0 / 255;
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       file >> r >> g >> b;
-      pixels[y * width + x] = std::make_shared<Colour>(r, g, b);
+      pixels[y * width + x] = std::make_shared<Colour>(r * scalar, g * scalar, b * scalar);
     }
   }
 }
 
 Image::~Image() = default;
 
-Colour Image::getColor(int x, int y) const {
+Colour Image::getColour(int x, int y) const {
   if (!isInside(x, y)) {
     throw std::out_of_range("Coordinates are out of range");
   }
   return *pixels[y * width + x];
+}
+
+Colour Image::getUVColour(double u, double v) const {
+  int x = static_cast<int>(u * width);
+  int y = static_cast<int>(v * height);
+  return getColour(x, y);
+}
+
+Colour Image::getUVColour(Vector2D uv) const {
+  return getUVColour(uv.x, uv.y);
 }
 
 void Image::setColor(int x, int y, const Colour &colour) {
@@ -93,7 +104,7 @@ void Image::saveToPPM(const std::string &filename) const {
   // Image data
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      file << getColor(x, y).toPPM() << "\t";
+      file << getColour(x, y).toPPM() << "\t";
     }
     file << "\n";
   }

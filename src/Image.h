@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Colour.h"
+#include "Vector2D.h"
 
 class Image {
  public:
@@ -15,7 +16,9 @@ class Image {
   Image(const std::string &filename);
   ~Image();
 
-  [[nodiscard]] Colour getColor(int x, int y) const;
+  [[nodiscard]] Colour getColour(int x, int y) const;
+  [[nodiscard]] Colour getUVColour(double u, double v) const;
+  [[nodiscard]] Colour getUVColour(Vector2D uv) const;
   void setColor(int x, int y, const Colour &colour);
 
   [[nodiscard]] int getWidth() const;

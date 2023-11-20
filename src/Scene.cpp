@@ -477,6 +477,10 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
   // Get the diffuse factor and backgroundColour of the object
   double diffuseFactor = intersection.value().first->getMaterial().getKd();
   Colour diffuseColour = intersection.value().first->getMaterial().getDiffuseColour();
+  if (material.getTexture()) {
+    Vector2D uv = hitShape->getUVCoordinates(hitPoint).value();
+    diffuseColour = material.getTexture()->getUVColour(uv);
+  }
 
   // Direct illumination
   Colour directIllumination(0, 0, 0);
