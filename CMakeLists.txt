@@ -41,6 +41,8 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/lights/SphereLight.h
         src/AABB.cpp
         src/AABB.h
+        src/Vector2D.cpp
+        src/Vector2D.h
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
