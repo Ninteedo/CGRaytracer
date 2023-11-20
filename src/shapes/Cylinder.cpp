@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include "Cylinder.h"
 
 Cylinder::Cylinder(const Vector3D &centre, const Vector3D &axis, double radius, double height,
@@ -134,19 +135,23 @@ std::optional<Vector2D> Cylinder::getUVCoordinates(Vector3D point) const {
   Vector3D localPoint = point - centre;  // Translate to the cylinder's local space
 
   // Determine if the point is on the top or bottom cap
-  double heightAlongAxis = localPoint.dot(axis.normalize());
+  double heightAlongAxis = localPoint.dot(axis);
   if (std::abs(heightAlongAxis - height) < EPSILON) { // Top cap
-    double u = (localPoint.x / radius + 1) / 2;
-    double v = (localPoint.y / radius + 1) / 2;
+    double u = (localPoint.x / (radius + 1)) / 2;
+    double v = (localPoint.z / (radius + 1)) / 2;
+    u = u < 0 ? u + 1 : u;  // Normalize U
+    v = v < 0 ? v + 1 : v;  // Normalize V
     return Vector2D(u, v);
   } else if (std::abs(heightAlongAxis + height) < EPSILON) { // Bottom cap
-    double u = (localPoint.x / radius + 1) / 2;
-    double v = (localPoint.y / radius + 1) / 2;
+    double u = (localPoint.x / (radius + 1)) / 2;
+    double v = (localPoint.z / (radius + 1)) / 2;
+    u = u < 0 ? u + 1 : u;  // Normalize U
+    v = v < 0 ? v + 1 : v;  // Normalize V
     return Vector2D(u, v);
   } else { // Curved surface
-    double u = atan2(localPoint.y, localPoint.x) / (2 * M_PI);
+    double u = atan2(localPoint.z, localPoint.x) / (2 * M_PI);
     u = u < 0 ? u + 1 : u;  // Normalize U
-    double v = (heightAlongAxis + height) / (2 * height); // Normalize V
+    double v = 1 - ((heightAlongAxis + height) / (2 * height)); // Normalize V
     return Vector2D(u, v);
   }
 }
