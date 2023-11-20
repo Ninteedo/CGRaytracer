@@ -75,8 +75,12 @@
                             "isreflective":false,
                             "reflectivity":1.0,
                             "isrefractive":false,
-                            "refractiveindex":1.0 
-                        } 
+                            "refractiveindex":1.0,
+                            "texture": "textures/MillenniumPuzzle.ppm"
+                        },
+                    "uv0": [0, 0],
+                    "uv1": [1, 0],
+                    "uv2": [0, 1]
                 },
                 { 
                     "type":"triangle", 
@@ -93,8 +97,12 @@
                             "isreflective":false,
                             "reflectivity":1.0,
                             "isrefractive":false,
-                            "refractiveindex":1.0 
-                        } 
+                            "refractiveindex":1.0,
+                            "texture": "textures/MillenniumPuzzle.ppm"
+                        } ,
+                    "uv0": [0, 1],
+                    "uv1": [1, 0],
+                    "uv2": [1, 1]
                 }  
             ] 
         } 
