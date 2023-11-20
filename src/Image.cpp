@@ -56,7 +56,7 @@ Image::~Image() = default;
 
 Colour Image::getColour(int x, int y) const {
   if (!isInside(x, y)) {
-    throw std::out_of_range("Coordinates are out of range");
+    throw std::out_of_range("Coordinates are out of range (" + std::to_string(x) + ", " + std::to_string(y) + ") / (" + std::to_string(width) + ", " + std::to_string(height) + ")");
   }
   return *pixels[y * width + x];
 }
