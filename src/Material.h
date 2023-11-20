@@ -4,6 +4,7 @@
 
 #include "Colour.h"
 #include "JSONParser.h"
+#include "Image.h"
 
 class Material {
  private:
@@ -18,6 +19,8 @@ class Material {
   const double refractiveIndex;
   const double roughness;
 
+  const Image *texture = nullptr;
+
  public:
   Material(double ks,
            double kd,
@@ -28,7 +31,8 @@ class Material {
            double reflectivity,
            bool isRefractive,
            double refractiveIndex,
-           double roughness);
+           double roughness,
+           const Image *texture = nullptr);
   explicit Material(JsonObject materialJson);
   ~Material();
 
@@ -42,6 +46,7 @@ class Material {
   [[nodiscard]] bool getIsRefractive() const;
   [[nodiscard]] double getRefractiveIndex() const;
   [[nodiscard]] double getRoughness() const;
+  [[nodiscard]] const Image *getTexture() const;
 };
 
 const Material DEFAULT_MATERIAL = Material(0.0, 1.0, 1, Colour(0, 0, 0), Colour(0, 0, 0), false, 0.0, false, 0.0, 0.0);
