@@ -123,23 +123,69 @@ Image Scene::renderBlinnPhong() {
 
 Image Scene::renderPathtracer() {
   Image image(camera.getWidth(), camera.getHeight());
+  Image varianceImage(camera.getWidth(), camera.getHeight());
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r).colour; };
+
+  int baselineSamples = 10;
+  int additionalSamplesMax = 90;
 
   int done = 0;
   auto start = std::chrono::high_resolution_clock::now();
 
   printProgress(0, camera.getHeight());
 
-#pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done)
+#pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done, baselineSamples, varianceImage)
   for (int y = 0; y < camera.getHeight(); y++) {
     for (int x = 0; x < camera.getWidth(); x++) {
-      image.setColor(x, y, sample(x, y, 100, colourSampler));
+      Colour pixelColour;
+      std::vector<Colour> samples;
+      double scale = 1.0 / baselineSamples;
+      for (int i = 0; i < baselineSamples; i++) {
+        double xOffset = random_double();
+        double yOffset = random_double();
+        Ray ray = camera.getRay(x, y, xOffset, yOffset);
+        auto [colour, distance] = samplePathtracer(ray);
+        pixelColour += colour * scale;
+        samples.push_back(colour);
+      }
+      Colour pixelVariance;
+      for (int i = 0; i < baselineSamples; i++) {
+        Colour difference = Colour(samples[i] - pixelColour);
+        pixelVariance += Colour(difference * difference) * scale;
+      }
+      image.setColor(x, y, pixelColour);
+      varianceImage.setColor(x, y, pixelVariance);
     }
     auto now = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
     printProgress(++done, camera.getHeight(), elapsed);
   }
+
+#pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done, baselineSamples, varianceImage, additionalSamplesMax)
+  for (int y = 0; y < camera.getHeight(); y++) {
+    for (int x = 0; x < camera.getWidth(); x++) {
+      Colour pixelColour = image.getColor(x, y);
+      Colour pixelVariance = varianceImage.getColor(x, y);
+      double variance = pixelVariance.red() + pixelVariance.green() + pixelVariance.blue();
+      double additionalSamples = std::max(0.0, std::min(1.0, std::sqrt(variance)));
+      int nSamples = additionalSamples * additionalSamplesMax;
+      double scale = 1.0 / (nSamples + baselineSamples);
+      pixelColour = Colour(pixelColour * ((double)baselineSamples / (baselineSamples + nSamples)));
+      for (int i = 0; i < nSamples; i++) {
+          double xOffset = random_double();
+          double yOffset = random_double();
+          Ray ray = camera.getRay(x, y, xOffset, yOffset);
+          auto [colour, distance] = samplePathtracer(ray);
+          pixelColour += colour * scale;
+      }
+      image.setColor(x, y, pixelColour);
+    }
+    auto now = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+    printProgress(++done, camera.getHeight(), elapsed);
+  }
+
   return image;
 }
 
