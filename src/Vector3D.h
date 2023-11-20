@@ -4,13 +4,11 @@
 
 #include "JSONParser.h"
 #include "Utility.h"
-#include <immintrin.h>  // for AVX
 
 class Vector3D {
- private:
-  __m256d data;
-
  public:
+  double x, y, z;
+
   // Default constructor
   Vector3D();
 
@@ -19,8 +17,6 @@ class Vector3D {
 
   // Copy constructor
   Vector3D(const Vector3D &v);
-
-  Vector3D(const __m256d &data);
 
   explicit Vector3D(JsonArray json);
 
@@ -32,8 +28,6 @@ class Vector3D {
   [[nodiscard]] double getX() const;
   [[nodiscard]] double getY() const;
   [[nodiscard]] double getZ() const;
-
-  [[nodiscard]] __m256d getData() const;
 
   [[nodiscard]] double max() const;
   [[nodiscard]] double min() const;
