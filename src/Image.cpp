@@ -9,6 +9,48 @@ Image::Image(int width, int height)
   pixels.resize(width * height);
 }
 
+Image::Image(const std::string &filename) {
+  std::ifstream file(filename);
+
+  if (!file.is_open()) {
+    throw std::runtime_error("Failed to open the file for reading");
+  }
+
+  std::string line;
+  std::getline(file, line); // Read the magic number (P3)
+  if (line != "P3") {
+    throw std::runtime_error("Invalid PPM file format");
+  }
+
+  // Skip comments
+  while (file.peek() == '#') {
+    std::getline(file, line);
+  }
+
+  // Read image dimensions
+  std::getline(file, line);
+  std::stringstream dimensions(line);
+  dimensions >> width >> height;
+  if (width <= 0 || height <= 0) {
+    throw std::runtime_error("Invalid image dimensions");
+  }
+
+  // Read and ignore the maximum color value
+  std::getline(file, line);
+
+  // Resize the pixels vector
+  pixels.resize(width * height);
+
+  // Read the pixel data
+  int r, g, b;
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      file >> r >> g >> b;
+      pixels[y * width + x] = std::make_shared<Colour>(r, g, b);
+    }
+  }
+}
+
 Image::~Image() = default;
 
 Colour Image::getColor(int x, int y) const {

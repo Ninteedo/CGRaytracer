@@ -12,6 +12,7 @@ class Image {
  public:
 
   Image(int width, int height);
+  Image(const std::string &filename);
   ~Image();
 
   [[nodiscard]] Colour getColor(int x, int y) const;
