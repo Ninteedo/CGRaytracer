@@ -162,14 +162,17 @@ Image Scene::renderPathtracer() {
     printProgress(++done, camera.getHeight(), elapsed);
   }
 
-#pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done, baselineSamples, varianceImage, additionalSamplesMax)
+  int totalSamples = 0;
+  int maxSamples = (baselineSamples + additionalSamplesMax) * camera.getWidth() * camera.getHeight();
+#pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done, baselineSamples, varianceImage, additionalSamplesMax, totalSamples)
   for (int y = 0; y < camera.getHeight(); y++) {
     for (int x = 0; x < camera.getWidth(); x++) {
       Colour pixelColour = image.getColor(x, y);
       Colour pixelVariance = varianceImage.getColor(x, y);
       double variance = pixelVariance.red() + pixelVariance.green() + pixelVariance.blue();
-      double additionalSamples = std::max(0.0, std::min(1.0, std::sqrt(variance)));
+      double additionalSamples = std::max(0.0, std::min(1.0, 10 * std::pow(variance, 1.0 / 3.0)));
       int nSamples = additionalSamples * additionalSamplesMax;
+      totalSamples += nSamples + baselineSamples;
       double scale = 1.0 / (nSamples + baselineSamples);
       pixelColour = Colour(pixelColour * ((double)baselineSamples / (baselineSamples + nSamples)));
       for (int i = 0; i < nSamples; i++) {
@@ -185,6 +188,7 @@ Image Scene::renderPathtracer() {
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
     printProgress(++done, camera.getHeight(), elapsed);
   }
+  std::cout << std::endl << "Total samples: " << totalSamples << " out of " << maxSamples << std::endl;
 
   return image;
 }
