@@ -56,5 +56,7 @@ endif()
 
 target_compile_options(CGRaytracer PRIVATE -mavx)
 
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -ffast-math")
+
 
 # TODO: Add tests and install targets if needed.
