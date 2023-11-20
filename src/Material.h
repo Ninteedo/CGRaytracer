@@ -44,4 +44,26 @@ class Material {
   [[nodiscard]] double getRoughness() const;
 };
 
+const Material DEFAULT_MATERIAL = Material(0.0, 1.0, 1, Colour(0, 0, 0), Colour(0, 0, 0), false, 0.0, false, 0.0, 0.0);
+const JsonValue DEFAULT_MATERIAL_JSON = JsonValue(JsonObject(std::map<std::string, JsonValue> {
+  {"ks", JsonValue(0.0)},
+  {"kd", JsonValue(1.0)},
+  {"specularexponent", JsonValue(1)},
+  {"diffusecolor", JsonValue(JsonArray(std::vector<JsonValue> {
+      JsonValue(0.0),
+      JsonValue(0.0),
+      JsonValue(0.0)
+  }))},
+  {"specularcolor", JsonValue(JsonArray(std::vector<JsonValue> {
+      JsonValue(0.0),
+      JsonValue(0.0),
+      JsonValue(0.0)
+  }))},
+  {"isreflective", JsonValue(false)},
+  {"reflectivity", JsonValue(0.0)},
+  {"isrefractive", JsonValue(false)},
+  {"refractiveindex", JsonValue(0.0)},
+  {"roughness", JsonValue(0.0)}
+  }));
+
 #endif //CGRAYTRACER_MATERIAL_H
