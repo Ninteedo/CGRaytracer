@@ -330,22 +330,25 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 
   // Diffuse and specular calculations for each light source
   for (const auto &lightSource : lightSources) {
-    Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
+    auto [lightDir, lightDistance] = lightSource->getDirectionAndDistance(hitPoint);
     Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
     Vector3D halfDir = (lightDir + viewDir).normalize();
-    double lightDistance = (lightSource->getPosition() - hitPoint).magnitude();
 
-    // Check for shadow
-    if (!isInShadow(hitPoint, *lightSource)) {
+    Colour lightIntensity = isInShadowPathtracer(
+        Ray(hitPoint, lightDir),
+        Colour(lightSource->getIntensity()),
+        hitPoint + lightDir * lightDistance);
+
+    if (lightIntensity.max() > 0) {
       // Diffuse term
       double ln = std::abs(lightDir.dot(normal));
-      Colour id = Colour(lightSource->getIntensity() * baseDiffuse);
+      Colour id = Colour(lightIntensity * baseDiffuse);
       Colour diffuseColour = Colour(id * ln * material.getKd());
       diffuseSpecularSum += diffuseColour * material.getKd();
 
       // Blinn-Phong specular term
       double hn = std::abs(halfDir.dot(normal));
-      Colour is = Colour(lightSource->getIntensity() * material.getSpecularColour());
+      Colour is = Colour(lightIntensity * material.getSpecularColour());
       Colour specularColour = Colour(is * std::pow(hn, material.getSpecularExponent()) * material.getKs());
       diffuseSpecularSum += specularColour * material.getKs() / (lightDistance * lightDistance);
     }
@@ -407,41 +410,61 @@ bool Scene::isInShadow(const Ray &shadowRay, double maxDistance, const LightSour
   return intersection.has_value();
 }
 
-Colour Scene::isInShadowPathtracer(const Ray &shadowRay, double maxDistance, const LightSource &light) const {
-  Interval interval = Interval(0.0001, maxDistance);
-  std::unique_ptr<Ray> currentRay = std::make_unique<Ray>(shadowRay);
-  Colour result = Colour(light.getIntensity());
+Colour Scene::isInShadowPathtracer(const Ray &shadowRay, Colour lightIntensity, const Vector3D& lightPosition, int depth) const {
+  if (depth >= nBounces) return Colour(0, 0, 0);
 
-  while (true) {
-    auto intersection = checkIntersection(*currentRay, interval);
-    if (!intersection.has_value()) {
-      return result;
-    }
+  Interval interval = Interval(0.0001, (lightPosition - shadowRay.origin).magnitude());
+  Colour result;
 
-    auto [hitShape, hitDistance] = intersection.value();
-    Vector3D hitPoint = currentRay->at(hitDistance);
-    Material material = hitShape->getMaterial();
-
-    if (material.getIsRefractive()) {
-      // Calculate the refractive ray
-      double refractiveIndex = material.getRefractiveIndex();
-      Vector3D normal = hitShape->getSurfaceNormal(hitPoint);
-      bool isExitRay = currentRay->direction.dot(normal) > 0;
-      Vector3D refractDirection;
-      if (isExitRay) {
-        refractDirection = currentRay->direction.refract(-normal, 1 / refractiveIndex).normalize();
-      } else {
-        refractDirection = currentRay->direction.refract(normal, refractiveIndex).normalize();
-      }
-
-      currentRay = std::make_unique<Ray>(Ray(hitPoint + refractDirection, refractDirection));
-//      result *= material.getTransparency(); // Accumulate transparency of refractive materials
-      result = Colour(result * 0.9);
-      interval = Interval(0.0001, maxDistance - hitDistance);
-    } else {
-      return Colour(0, 0, 0);
-    }
+  auto intersection = checkIntersection(shadowRay, interval);
+  if (!intersection.has_value()) {
+    return lightIntensity;
   }
+
+  auto [hitShape, hitDistance] = intersection.value();
+  Vector3D hitPoint = shadowRay.at(hitDistance);
+  Material material = hitShape->getMaterial();
+
+  if (material.getIsRefractive()) {
+    // Calculate the refractive ray
+    double refractiveIndex = material.getRefractiveIndex();
+    Vector3D normal = hitShape->getSurfaceNormal(hitPoint);
+    bool isExitRay = shadowRay.direction.dot(normal) > 0;
+    Vector3D refractDirection;  // = currentRay->direction;
+    if (isExitRay) {
+      refractDirection = shadowRay.direction.refract(-normal, refractiveIndex).normalize();
+    } else {
+      refractDirection = shadowRay.direction.refract(normal, 1 / refractiveIndex).normalize();
+    }
+
+    Vector3D lightDirection = (lightPosition - shadowRay.origin).normalize();
+
+    // Calculate Schlick's approximation
+    double cosTheta = std::abs(shadowRay.direction.dot(normal));
+    double R0 = std::pow((1 - material.getRefractiveIndex()) / (1 + material.getRefractiveIndex()), 2);
+    double reflectance = R0 + (1 - R0) * std::pow(1 - cosTheta, 5);
+
+    Ray lightRay = Ray(hitPoint, lightDirection);
+    Ray refractRay = Ray(hitPoint, refractDirection);
+    Ray reflectRay = Ray(hitPoint, shadowRay.direction.reflect(normal));
+
+    double refractFactor = 1 - reflectance;
+    double reflectFactor = reflectance;
+    double lightFactor = 1 - reflectance;  // std::abs(refractRay.direction.dot(lightRay.direction) * (1 - reflectance));
+
+    Colour refractBaseIntensity = Colour(lightIntensity * refractFactor);
+    Colour reflectBaseIntensity = Colour(lightIntensity * reflectFactor);
+
+    if (!checkIntersection(lightRay, Interval(0.0001, (lightPosition - hitPoint).magnitude()))) {
+      return Colour(lightIntensity * lightFactor);
+    }
+    Colour refractIntensity = isInShadowPathtracer(refractRay, refractBaseIntensity, lightPosition, depth + 1);
+
+    return refractIntensity;
+  } else {
+    return Colour(0, 0, 0);
+  }
+
 }
 
 SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
@@ -513,7 +536,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
       Vector3D lightDirection = toLight.normalize();
       Vector3D halfDirection = (lightDirection + ray.direction).normalize();
 
-      Colour lightIntensity = isInShadowPathtracer(Ray(hitPoint, toLight), distanceToLight, *lightSource);
+      Colour lightIntensity = isInShadowPathtracer(Ray(hitPoint, toLight), Colour(), Vector3D(), 0);
 
       if (lightIntensity.max() > 0) {
         // Compute the illumination contribution
