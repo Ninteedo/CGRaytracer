@@ -125,7 +125,7 @@ Image Scene::renderPathtracer() {
   Image image(camera.getWidth(), camera.getHeight());
   Image varianceImage(camera.getWidth(), camera.getHeight());
 
-  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r).colour; };
+  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r); };
 
   int baselineSamples = 10;
   int additionalSamplesMax = 20;
@@ -145,7 +145,7 @@ Image Scene::renderPathtracer() {
         double xOffset = random_double();
         double yOffset = random_double();
         Ray ray = camera.getRay(x, y, xOffset, yOffset);
-        auto [colour, distance] = samplePathtracer(ray);
+        auto colour = samplePathtracer(ray);
         pixelColour += colour * scale;
         samples.push_back(colour);
       }
@@ -179,7 +179,7 @@ Image Scene::renderPathtracer() {
           double xOffset = random_double();
           double yOffset = random_double();
           Ray ray = camera.getRay(x, y, xOffset, yOffset);
-          auto [colour, distance] = samplePathtracer(ray);
+          auto colour = samplePathtracer(ray);
           pixelColour += colour * scale;
       }
       image.setColor(x, y, pixelColour);
@@ -454,15 +454,15 @@ Colour Scene::isInShadowPathtracer(const Ray &shadowRay, Colour lightIntensity, 
 
 }
 
-SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
+Colour Scene::samplePathtracer(const Ray &ray, int depth) {
   // Base case: if we've reached the maximum number of bounces, return black
-  if (depth >= nBounces) return {backgroundColour, INFINITY};
+  if (depth >= nBounces) return backgroundColour;
 
   // Check if the ray intersects with any objects in the scene
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
 
   // If the ray doesn't intersect with anything, return the background backgroundColour
-  if (!intersection.has_value()) return {backgroundColour, INFINITY};
+  if (!intersection.has_value()) return backgroundColour;
 
   auto [hitShape, hitDistance] = intersection.value();
 
@@ -487,7 +487,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
       reflectDir = (reflectDir + normal.randomInHemisphere() * material.getRoughness()).normalize();
     }
     Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
-    auto [reflectSample, dist] = samplePathtracer(reflectRay, depth + 1);
+    auto reflectSample = samplePathtracer(reflectRay, depth + 1);
     reflectColour = Colour(reflectSample * reflectivity);
   }
 
@@ -498,7 +498,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
       refractDir = (refractDir + normal.randomInHemisphere() * material.getRoughness()).normalize();
     }
     Ray refractRay(hitPoint, refractDir);
-    auto [refractSample, dist] = samplePathtracer(refractRay, depth + 1);
+    auto refractSample = samplePathtracer(refractRay, depth + 1);
     refractColour = Colour(refractSample * (1 - reflectivity));
   }
 
@@ -546,7 +546,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
     double randomValue = random_double();
 
     if (randomValue < terminationProbability) {
-      return {Colour(directIllumination), hitDistance};
+      return directIllumination;
     } else {
       directIllumination = Colour(directIllumination / (1 - terminationProbability));
     }
@@ -562,17 +562,16 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
     // Create a new ray starting at the intersection point and going in the bounce direction
     Ray bounceRay = Ray(ray.at(hitDistance), bounceDirection.normalize());
 
-    auto [newBounceColour, bounceDistance] = samplePathtracer(bounceRay, depth + 1);
+    auto newBounceColour = samplePathtracer(bounceRay, depth + 1);
 
     // Calculate the colour of the bounce ray
     bounceColour += Colour(newBounceColour / nSamples);  // (nSamples * bounceDistance * bounceDistance));
   }
   Colour totalIllumination = Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
-  return {Colour(
+  return Colour(
       totalIllumination
           + reflectColour
-          + refractColour
-  ), hitDistance};
+          + refractColour);
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray, Interval interval) const {

@@ -19,11 +19,6 @@ enum RenderMode {
   PATHTRACER,
 };
 
-struct SampleRecord {
-  Colour colour;
-  double distance = 0;
-};
-
 class Node {
  public:
   std::shared_ptr<Shape> shape;
@@ -72,7 +67,7 @@ class Scene {
   Colour sampleDiffuse(const Ray &ray, int depth = 0);
   Colour sampleDiffuseAndSpecular(const Ray &ray, int depth = 0);
   Colour sampleBlinnPhong(const Ray &ray, int depth = 0);
-  SampleRecord samplePathtracer(const Ray &ray, int depth = 0);
+  Colour samplePathtracer(const Ray &ray, int depth = 0);
 
   [[nodiscard]] std::optional<std::pair<std::shared_ptr<Shape>, double>> checkIntersection(
       const Ray &ray, Interval interval = POSITIVE_INTERVAL) const;
