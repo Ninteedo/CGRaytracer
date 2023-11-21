@@ -16,7 +16,7 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/Scene.h
         src/shapes/Shape.h
         src/lights/LightSource.h
-        src/Material.h
+        src/materials/Material.h
         src/cameras/Camera.h
         src/shapes/Sphere.h
         src/shapes/Cylinder.h
@@ -24,7 +24,7 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/lights/PointLight.h
         src/shapes/Sphere.cpp
         src/shapes/Shape.cpp
-        src/Material.cpp
+        src/materials/Material.cpp
         src/Scene.cpp
         src/lights/LightSource.cpp
         src/lights/PointLight.cpp
@@ -45,6 +45,8 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/Vector2D.h
         src/cameras/FiniteApertureCamera.cpp
         src/cameras/FiniteApertureCamera.h
+        src/materials/Lambertian.cpp
+        src/materials/Lambertian.h
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

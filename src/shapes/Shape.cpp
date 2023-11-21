@@ -6,7 +6,7 @@
 #include "Sphere.h"
 #include "Triangle.h"
 
-Shape::Shape(const Material &material) : material(material) {}
+Shape::Shape(Material *material) : material(material) {}
 
 std::shared_ptr<Shape> Shape::fromJson(JsonObject json) {
   std::string type = json["type"].asString();
@@ -20,6 +20,6 @@ std::shared_ptr<Shape> Shape::fromJson(JsonObject json) {
     throw std::runtime_error("Unknown object type: " + type);
   }
 }
-Material Shape::getMaterial() const {
+Material* Shape::getMaterial() const {
   return material;
 }

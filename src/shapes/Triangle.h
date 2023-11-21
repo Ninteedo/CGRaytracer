@@ -12,7 +12,7 @@ class Triangle : public Shape {
   Vector2D uv0, uv1, uv2;  // UV coordinates
 
  public:
-  Triangle(const Vector3D& v0, const Vector3D& v1, const Vector3D& v2, const Material& material, const Vector2D& uv0, const Vector2D& uv1, const Vector2D& uv2);
+  Triangle(const Vector3D& v0, const Vector3D& v1, const Vector3D& v2, Material *material, const Vector2D& uv0, const Vector2D& uv1, const Vector2D& uv2);
   explicit Triangle(JsonObject json);
 
   [[nodiscard]] std::optional<double> checkIntersection(Ray ray, Interval interval) const override;

@@ -1,14 +1,14 @@
 #include "Sphere.h"
 #include <cmath>
 
-Sphere::Sphere(const Vector3D& centre, double radius, const Material& material)
+Sphere::Sphere(const Vector3D& centre, double radius, Material *material)
     : Shape(material), centre(centre), radius(radius) {}
 
 Sphere::Sphere(JsonObject json)
     : Sphere(
     Vector3D(json["center"].asArray()),
     json["radius"].asDouble(),
-    Material(json["material"].asObject())
+    Material::fromJson(json["material"].asObject())
 ) {}
 
 std::optional<double> Sphere::checkIntersection(Ray ray, Interval interval) const {

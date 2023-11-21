@@ -2,12 +2,12 @@
 #ifndef CGRAYTRACER_MATERIAL_H
 #define CGRAYTRACER_MATERIAL_H
 
-#include "Colour.h"
-#include "JSONParser.h"
-#include "Image.h"
+#include "../Colour.h"
+#include "../JSONParser.h"
+#include "../Image.h"
 
 class Material {
- private:
+ protected:
   const double ks;
   const double kd;
   const int specularExponent;
@@ -36,6 +36,8 @@ class Material {
   explicit Material(JsonObject materialJson);
   ~Material();
 
+  static Material* fromJson(JsonObject materialJson);
+
   [[nodiscard]] double getKs() const;
   [[nodiscard]] double getKd() const;
   [[nodiscard]] int getSpecularExponent() const;
@@ -49,28 +51,8 @@ class Material {
   [[nodiscard]] const Image *getTexture() const;
 
   [[nodiscard]] bool isTextured() const;
-};
 
-const Material DEFAULT_MATERIAL = Material(0.0, 1.0, 1, Colour(0, 0, 0), Colour(0, 0, 0), false, 0.0, false, 0.0, 0.0);
-const JsonValue DEFAULT_MATERIAL_JSON = JsonValue(JsonObject(std::map<std::string, JsonValue> {
-  {"ks", JsonValue(0.0)},
-  {"kd", JsonValue(1.0)},
-  {"specularexponent", JsonValue(1)},
-  {"diffusecolor", JsonValue(JsonArray(std::vector<JsonValue> {
-      JsonValue(0.0),
-      JsonValue(0.0),
-      JsonValue(0.0)
-  }))},
-  {"specularcolor", JsonValue(JsonArray(std::vector<JsonValue> {
-      JsonValue(0.0),
-      JsonValue(0.0),
-      JsonValue(0.0)
-  }))},
-  {"isreflective", JsonValue(false)},
-  {"reflectivity", JsonValue(0.0)},
-  {"isrefractive", JsonValue(false)},
-  {"refractiveindex", JsonValue(0.0)},
-  {"roughness", JsonValue(0.0)}
-  }));
+  [[nodiscard]] virtual Colour evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const = 0;
+};
 
 #endif //CGRAYTRACER_MATERIAL_H

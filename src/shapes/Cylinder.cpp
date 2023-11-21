@@ -1,9 +1,10 @@
 #include <cmath>
 #include <iostream>
 #include "Cylinder.h"
+#include "../materials/Lambertian.h"
 
 Cylinder::Cylinder(const Vector3D &centre, const Vector3D &axis, double radius, double height,
-                   const Material &material, const Material &topMaterial, const Material &bottomMaterial)
+                   Material *material, Material *topMaterial, Material *bottomMaterial)
     : Shape(material), centre(centre), axis(axis.normalize()), radius(radius),
       height(height), topMaterial(topMaterial), bottomMaterial(bottomMaterial) {}
 
@@ -13,9 +14,9 @@ Cylinder::Cylinder(JsonObject json)
     Vector3D(json["axis"].asArray()),
     json["radius"].asDouble(),
     json["height"].asDouble(),
-    Material(json["material"].asObject()),
-    Material(getOrDefault(json, "topmaterial", DEFAULT_MATERIAL_JSON).asObject()),
-    Material(getOrDefault(json, "bottommaterial", DEFAULT_MATERIAL_JSON).asObject())
+    Material::fromJson(json["material"].asObject()),
+    Material::fromJson(getOrDefault(json, "topmaterial", DEFAULT_MATERIAL_JSON).asObject()),
+    Material::fromJson(getOrDefault(json, "bottommaterial", DEFAULT_MATERIAL_JSON).asObject())
 ) {}
 
 std::optional<double> Cylinder::checkIntersection(Ray ray, Interval interval) const {

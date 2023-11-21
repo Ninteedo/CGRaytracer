@@ -2,7 +2,7 @@
 #ifndef CGRAYTRACER_OBJECT_H
 #define CGRAYTRACER_OBJECT_H
 
-#include "../Material.h"
+#include "../materials/Material.h"
 #include "../Ray.h"
 #include "../Interval.h"
 #include "../AABB.h"
@@ -12,16 +12,16 @@
 
 class Shape {
  private:
-  const Material material;
+  Material *material;
 
  public:
-  explicit Shape(const Material &material);
+  explicit Shape(Material* material);
 
   // Create a new Shape from JSON.
   // The class corresponds to the type field in the JSON.
   static std::shared_ptr<Shape> fromJson(JsonObject json);
 
-  [[nodiscard]] Material getMaterial() const;
+  [[nodiscard]] Material* getMaterial() const;
 
   [[nodiscard]] virtual std::optional<double> checkIntersection(Ray ray, Interval interval) const = 0;
 

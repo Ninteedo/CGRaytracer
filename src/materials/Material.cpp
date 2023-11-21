@@ -1,4 +1,5 @@
 #include "Material.h"
+#include "Lambertian.h"
 
 #include <utility>
 
@@ -31,6 +32,12 @@ Material::Material(JsonObject materialJson)
 }
 
 Material::~Material() = default;
+
+Material* Material::fromJson(JsonObject materialJson) {
+  if (!materialJson.contains("type") || materialJson["type"].asString() == "lambertian") {
+    return new Lambertian(materialJson);
+  }
+}
 
 double Material::getKs() const { return ks; }
 

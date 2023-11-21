@@ -11,7 +11,7 @@ class Sphere : public Shape {
   Vector3D centre;
   double radius;
  public:
-  Sphere(const Vector3D& centre, double radius, const Material& material);
+  Sphere(const Vector3D& centre, double radius, Material *material);
   explicit Sphere(JsonObject json);
 
   [[nodiscard]] std::optional<double> checkIntersection(Ray ray, Interval interval) const override;
