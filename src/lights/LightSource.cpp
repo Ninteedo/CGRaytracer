@@ -1,11 +1,13 @@
 #include "LightSource.h"
 
 #include <stdexcept>
+#include <utility>
 
 #include "PointLight.h"
 #include "SphereLight.h"
+#include "../Colour.h"
 
-LightSource::LightSource(const Vector3D &position, const Vector3D &intensity) : position(position), intensity(intensity) {}
+LightSource::LightSource(const Vector3D &position, Colour intensity) : position(position), intensity(std::move(intensity)) {}
 
 std::unique_ptr<LightSource> LightSource::fromJson(JsonObject json) {
   std::string type = json["type"].asString();
@@ -22,6 +24,6 @@ Vector3D LightSource::getPosition() const {
   return position;
 }
 
-Vector3D LightSource::getIntensity() const {
+Colour LightSource::getIntensity() const {
   return intensity;
 }

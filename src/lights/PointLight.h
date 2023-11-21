@@ -8,7 +8,7 @@ class PointLight : public LightSource {
  private:
 
  public:
-  PointLight(const Vector3D &position, const Vector3D &intensity);
+  PointLight(const Vector3D &position, const Colour &intensity);
 
   explicit PointLight(JsonObject json);
 

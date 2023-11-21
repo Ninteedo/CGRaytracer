@@ -334,7 +334,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 
     Colour lightIntensity = isInShadowPathtracer(
         Ray(hitPoint, lightDir),
-        Colour(lightSource->getIntensity()),
+        lightSource->getIntensity(),
         hitPoint + lightDir * lightDistance);
 
     if (lightIntensity.max() > 0) {
@@ -520,7 +520,10 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
       Vector3D lightDirection = toLight.normalize();
       Vector3D halfDirection = (lightDirection + ray.direction).normalize();
 
-      Colour lightIntensity = isInShadowPathtracer(Ray(hitPoint, toLight), Colour(lightSource->getIntensity()), hitPoint + (toLight * distanceToLight), 0);
+      Colour lightIntensity = isInShadowPathtracer(
+          Ray(hitPoint, toLight),
+          lightSource->getIntensity(),
+          hitPoint + (toLight * distanceToLight));
 
       if (lightIntensity.max() > 0) {
         // Compute the illumination contribution

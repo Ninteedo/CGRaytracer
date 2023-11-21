@@ -8,7 +8,7 @@ class SphereLight : public LightSource {
   double radius;
 
  public:
-  SphereLight(const Vector3D &position, const Vector3D &intensity, double radius);
+  SphereLight(const Vector3D &position, const Colour &intensity, double radius);
 
   explicit SphereLight(JsonObject json);
 
