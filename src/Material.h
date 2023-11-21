@@ -47,6 +47,8 @@ class Material {
   [[nodiscard]] double getRefractiveIndex() const;
   [[nodiscard]] double getRoughness() const;
   [[nodiscard]] const Image *getTexture() const;
+
+  [[nodiscard]] bool isTextured() const;
 };
 
 const Material DEFAULT_MATERIAL = Material(0.0, 1.0, 1, Colour(0, 0, 0), Colour(0, 0, 0), false, 0.0, false, 0.0, 0.0);

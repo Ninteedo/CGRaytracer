@@ -55,3 +55,7 @@ double Material::getRoughness() const { return roughness; }
 const Image *Material::getTexture() const {
   return texture;
 }
+
+bool Material::isTextured() const {
+  return texture != nullptr;
+}
