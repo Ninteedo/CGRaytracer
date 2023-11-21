@@ -131,7 +131,7 @@ Image Scene::renderPathtracer() {
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r); };
 
   int baselineSamples = 10;
-  int additionalSamplesMax = 20;
+  int additionalSamplesMax = 90;
 
   int done = 0;
   auto start = std::chrono::high_resolution_clock::now();

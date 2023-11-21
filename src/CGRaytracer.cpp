@@ -8,8 +8,14 @@
 
 using namespace std;
 
-int main() {
-  std::string sceneFilename = "glass_spheres_pathtraced.json";
+int main(int argc, char *argv[]) {
+  // Check if a scene filename is passed as an argument
+  if (argc < 2) {
+    cerr << "Usage: " << argv[0] << " <sceneFilename>" << endl;
+    return 1;
+  }
+
+  string sceneFilename = argv[1]; // Get the scene filename from the command line
 
   Scene scene = Scene::loadFromFile("../scenes/" + sceneFilename);
 
