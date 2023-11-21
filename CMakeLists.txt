@@ -17,7 +17,7 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/shapes/Shape.h
         src/lights/LightSource.h
         src/Material.h
-        src/Camera.h
+        src/cameras/Camera.h
         src/shapes/Sphere.h
         src/shapes/Cylinder.h
         src/shapes/Triangle.h
@@ -28,9 +28,9 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/Scene.cpp
         src/lights/LightSource.cpp
         src/lights/PointLight.cpp
-        src/Camera.cpp
-        src/PinholeCamera.cpp
-        src/PinholeCamera.h
+        src/cameras/Camera.cpp
+        src/cameras/PinholeCamera.cpp
+        src/cameras/PinholeCamera.h
         src/shapes/Cylinder.cpp
         src/shapes/Triangle.cpp
         src/Interval.cpp

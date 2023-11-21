@@ -3,9 +3,9 @@
 #define CGRAYTRACER_CAMERA_H
 
 #include <memory>
-#include "Vector3D.h"
-#include "JSONParser.h"
-#include "Ray.h"
+#include "../Vector3D.h"
+#include "../JSONParser.h"
+#include "../Ray.h"
 
 class Camera {
  private:

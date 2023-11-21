@@ -6,7 +6,7 @@
 #include "Colour.h"
 #include "shapes/Shape.h"
 #include "lights/LightSource.h"
-#include "Camera.h"
+#include "cameras/Camera.h"
 #include "Image.h"
 #include <random>
 #include <functional>

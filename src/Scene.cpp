@@ -456,7 +456,7 @@ Colour Scene::isInShadowPathtracer(const Ray &shadowRay, Colour lightIntensity, 
 
 Colour Scene::samplePathtracer(const Ray &ray, int depth) {
   // Base case: if we've reached the maximum number of bounces, return black
-  if (depth >= nBounces) return backgroundColour;
+  if (depth >= nBounces) return Colour(0, 0, 0);
 
   // Check if the ray intersects with any objects in the scene
   std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
