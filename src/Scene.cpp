@@ -112,7 +112,7 @@ Image Scene::renderBlinnPhong() {
 #pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done)
   for (int y = 0; y < camera.getHeight(); y++) {
     for (int x = 0; x < camera.getWidth(); x++) {
-      image.setColor(x, y, sample(x, y, 8, colourSampler));
+      image.setColor(x, y, sample(x, y, 25, colourSampler));
     }
     auto now = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
@@ -167,8 +167,8 @@ Image Scene::renderPathtracer() {
 #pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done, baselineSamples, varianceImage, additionalSamplesMax, totalSamples)
   for (int y = 0; y < camera.getHeight(); y++) {
     for (int x = 0; x < camera.getWidth(); x++) {
-      Colour pixelColour = image.getColor(x, y);
-      Colour pixelVariance = varianceImage.getColor(x, y);
+      Colour pixelColour = image.getColour(x, y);
+      Colour pixelVariance = varianceImage.getColour(x, y);
       double variance = pixelVariance.red() + pixelVariance.green() + pixelVariance.blue();
       double additionalSamples = std::max(0.0, std::min(1.0, 10 * std::pow(variance, 1.0 / 3.0)));
       int nSamples = additionalSamples * additionalSamplesMax;
@@ -316,9 +316,15 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 
   bool isExitRay = ray.direction.dot(normal) > 0;
 
+  Colour baseDiffuse = material.getDiffuseColour();
+  if (material.getTexture()) {
+    Vector2D uv = hitShape->getUVCoordinates(hitPoint).value();
+    baseDiffuse = material.getTexture()->getUVColour(uv);
+  }
+
   // Initialize the colour with ambient light if defined, otherwise black
   Colour ambientIntensity = Colour(0.3, 0.3, 0.3);
-  Colour ambientColour = Colour(ambientIntensity * material.getDiffuseColour());
+  Colour ambientColour = Colour(ambientIntensity * baseDiffuse);
 
   Colour diffuseSpecularSum = Colour();
 
@@ -332,13 +338,13 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
     // Check for shadow
     if (!isInShadow(hitPoint, *lightSource)) {
       // Diffuse term
-      double ln = lightDir.dot(normal);
-      Colour id = Colour(lightSource->getIntensity() * material.getDiffuseColour());
+      double ln = std::abs(lightDir.dot(normal));
+      Colour id = Colour(lightSource->getIntensity() * baseDiffuse);
       Colour diffuseColour = Colour(id * ln * material.getKd());
       diffuseSpecularSum += diffuseColour * material.getKd();
 
       // Blinn-Phong specular term
-      double hn = halfDir.dot(normal);
+      double hn = std::abs(halfDir.dot(normal));
       Colour is = Colour(lightSource->getIntensity() * material.getSpecularColour());
       Colour specularColour = Colour(is * std::pow(hn, material.getSpecularExponent()) * material.getKs());
       diffuseSpecularSum += specularColour * material.getKs() / (lightDistance * lightDistance);
@@ -347,23 +353,40 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
 
   // Reflectivity and refraction
   Colour colour = Colour(ambientColour + diffuseSpecularSum);
+
+  double reflectance = material.getIsReflective();
+  if (material.getIsRefractive()) {
+    // Calculate Schlick's approximation
+    double cosTheta = std::abs(ray.direction.dot(normal));
+    double R0 = std::pow((1 - material.getRefractiveIndex()) / (1 + material.getRefractiveIndex()), 2);
+    reflectance = R0 + (1 - R0) * std::pow(1 - cosTheta, 5);
+  }
+  reflectance *= material.getReflectivity();
+
+  colour = Colour(colour * (1 - reflectance));
+
   if (material.getIsReflective()) {
     Vector3D reflectDir = ray.direction.reflect(normal).normalize();
+    if (material.getRoughness() > 0) {
+      reflectDir = (reflectDir + normal.randomInHemisphere() * material.getRoughness()).normalize();
+    }
     Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
     Colour reflectSample = sampleBlinnPhong(reflectRay, depth + 1);
-    colour = Colour(colour * (1 - material.getReflectivity())
-                        + reflectSample * material.getReflectivity());
+    colour += reflectSample * reflectance;
   }
   if (material.getIsRefractive()) {
     Vector3D refractDir;
     if (isExitRay) {
-      refractDir = ray.direction.refract(normal, 1 / material.getRefractiveIndex()).normalize();
+      refractDir = ray.direction.refract(-normal, material.getRefractiveIndex()).normalize();
     } else {
-      refractDir = ray.direction.refract(normal, material.getRefractiveIndex()).normalize();
+      refractDir = ray.direction.refract(normal,  1 / material.getRefractiveIndex()).normalize();
+    }
+    if (material.getRoughness() > 0) {
+      refractDir = (refractDir + normal.randomInHemisphere() * material.getRoughness()).normalize();
     }
     Ray refractRay(hitPoint, refractDir);
     Colour refractSample = sampleBlinnPhong(refractRay, depth + 1);
-    colour = refractSample;
+    colour += refractSample * (1 - reflectance);
   }
 
   // Clamp colour values to ensure they are within the valid range
@@ -462,9 +485,9 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
     Vector3D refractDirection;
     bool isExitRay = ray.direction.dot(normal) > 0;
     if (isExitRay) {
-      refractDirection = ray.direction.refract(-normal, 1 / refractiveIndex);
+      refractDirection = ray.direction.refract(-normal, refractiveIndex);
     } else {
-      refractDirection = ray.direction.refract(normal, refractiveIndex);
+      refractDirection = ray.direction.refract(normal, 1 / refractiveIndex);
     }
     refractDirection = (refractDirection + normal.randomInHemisphere() * material.getRoughness()).normalize();
     Ray refractRay(hitPoint, refractDirection);

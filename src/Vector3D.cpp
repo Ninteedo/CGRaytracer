@@ -64,14 +64,14 @@ Vector3D Vector3D::operator/(double val) const {
 }
 
 Vector3D Vector3D::operator+=(const Vector3D &v) {
-    this->x += v.x;
-    this->y += v.y;
-    this->z += v.z;
-    return *this;
+  this->x += v.x;
+  this->y += v.y;
+  this->z += v.z;
+  return *this;
 }
 
 bool Vector3D::operator==(const Vector3D &v) const {
-    return getX() == v.getX() && getY() == v.getY() && getZ() == v.getZ();
+  return getX() == v.getX() && getY() == v.getY() && getZ() == v.getZ();
 }
 
 bool Vector3D::operator!=(const Vector3D &v) const {
@@ -79,11 +79,12 @@ bool Vector3D::operator!=(const Vector3D &v) const {
 }
 
 double Vector3D::dot(const Vector3D &v) const {
-    return getX() * v.getX() + getY() * v.getY() + getZ() * v.getZ();
+  return getX() * v.getX() + getY() * v.getY() + getZ() * v.getZ();
 }
 
 Vector3D Vector3D::cross(const Vector3D &v) const {
-  return {getY() * v.getZ() - getZ() * v.getY(), getZ() * v.getX() - getX() * v.getZ(), getX() * v.getY() - getY() * v.getX()};
+  return {getY() * v.getZ() - getZ() * v.getY(), getZ() * v.getX() - getX() * v.getZ(),
+          getX() * v.getY() - getY() * v.getX()};
 }
 
 double Vector3D::magnitude() const {
@@ -141,16 +142,13 @@ Vector3D Vector3D::reflect(const Vector3D &normal, double roughness) const {
 }
 
 Vector3D Vector3D::refract(const Vector3D &normal, double refractiveFactor) const {
-  double cosTheta = fmin(-this->dot(normal), 1.0);
-  double sinTheta = sqrt(1.0 - cosTheta * cosTheta);
-
-  if (refractiveFactor * sinTheta > 1.0) {
-    return reflect(normal);
-  }
-
-  Vector3D r_out_perp = (*this + normal * cosTheta) * refractiveFactor;
-  Vector3D r_out_parallel = normal * -sqrt(fabs(1.0 - r_out_perp.magnitudeSquared()));
-  return r_out_perp + r_out_parallel;
+  // refractive factor is incident medium refractive index / refractive medium refractive index
+  // use Snell's law to compute the refracted ray
+  const double cosI = -dot(normal);
+  const double sinT2 = refractiveFactor * refractiveFactor * (1.0 - cosI * cosI);
+  if(sinT2 > 1.0) return reflect(normal); // TIR
+  const double cosT = sqrt(1.0 - sinT2);
+  return *this * refractiveFactor + normal * (refractiveFactor * cosI - cosT);
 }
 
 std::ostream &operator<<(std::ostream &os, const Vector3D &v) {
