@@ -35,7 +35,7 @@ class Scene {
  private:
   int nBounces;
   RenderMode renderMode;
-  Camera camera;
+  Camera* camera;
   Colour backgroundColour;
   std::vector<std::shared_ptr<Shape>> shapes;
   std::vector<std::shared_ptr<LightSource>> lightSources;
@@ -44,7 +44,7 @@ class Scene {
   void buildBspTree();
  public:
   Scene(Colour colour,
-        const Camera &camera,
+        Camera* camera,
         std::vector<std::shared_ptr<Shape>> objects,
         std::vector<std::shared_ptr<LightSource>> lightSources,
         int nBounces,

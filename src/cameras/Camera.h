@@ -17,6 +17,7 @@ class Camera {
   int width;
   int height;
 
+ protected:
   // precomputed values
   Vector3D w, u, v;
   double viewPlaneWidth, viewPlaneHeight;
@@ -32,7 +33,7 @@ class Camera {
   explicit Camera(JsonObject cameraJson);
   ~Camera();
 
-  static std::unique_ptr<Camera> fromJson(JsonObject json);
+  static Camera* fromJson(JsonObject json);
 
   // Getters
 
@@ -44,7 +45,7 @@ class Camera {
   [[nodiscard]] int getWidth() const;
   [[nodiscard]] int getHeight() const;
 
-  [[nodiscard]] Ray getRay(double x, double y, double xOffset = 0.5, double yOffset = 0.5) const;
+  [[nodiscard]] virtual Ray getRay(double x, double y, double xOffset, double yOffset) const = 0;
 };
 
 #endif //CGRAYTRACER_CAMERA_H

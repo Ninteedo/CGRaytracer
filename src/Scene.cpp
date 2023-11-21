@@ -8,7 +8,7 @@
 #include <omp.h>
 
 Scene::Scene(Colour colour,
-             const Camera &camera,
+             Camera* camera,
              std::vector<std::shared_ptr<Shape>> objects,
              std::vector<std::shared_ptr<LightSource>> lightSources,
              int nBounces,
@@ -22,7 +22,7 @@ Scene::Scene(Colour colour,
   buildBspTree();
 }
 
-Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json["camera"].asObject()) {
+Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(Camera::fromJson(json["camera"].asObject())) {
   std::string renderModeString = json["rendermode"].asString();
   if (renderModeString == "binary") {
     renderMode = BINARY;
@@ -33,6 +33,9 @@ Scene::Scene(JsonObject json) : nBounces(json["nbounces"].asInt()), camera(json[
   } else {
     throw std::runtime_error("Invalid render mode");
   }
+  JsonObject cameraObject = json["camera"].asObject();
+
+
   JsonObject sceneObject = json["scene"].asObject();
   backgroundColour = Colour(sceneObject["backgroundcolor"].asArray());
   JsonArray lightsJson = sceneObject["lightsources"].asArray();
@@ -64,11 +67,11 @@ Image Scene::render() {
 }
 
 Image Scene::renderBinary() {
-  Image image(camera.getWidth(), camera.getHeight());
+  Image image(camera->getWidth(), camera->getHeight());
 
-  for (int y = 0; y < camera.getHeight(); y++) {
-    for (int x = 0; x < camera.getWidth(); x++) {
-      Ray ray = camera.getRay(x, y);
+  for (int y = 0; y < camera->getHeight(); y++) {
+    for (int x = 0; x < camera->getWidth(); x++) {
+      Ray ray = camera->getRay(x, y, 0.5, 0.5);
       std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
 
       Colour pixelColour;
@@ -85,45 +88,45 @@ Image Scene::renderBinary() {
 }
 
 Image Scene::renderShaded() {
-  Image image(camera.getWidth(), camera.getHeight());
+  Image image(camera->getWidth(), camera->getHeight());
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuseAndSpecular(r); };
 
-  for (int y = 0; y < camera.getHeight(); y++) {
-    printProgress(y, camera.getHeight());
-    for (int x = 0; x < camera.getWidth(); x++) {
+  for (int y = 0; y < camera->getHeight(); y++) {
+    printProgress(y, camera->getHeight());
+    for (int x = 0; x < camera->getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 8, colourSampler));
     }
   }
-  printProgress(camera.getHeight(), camera.getHeight());
+  printProgress(camera->getHeight(), camera->getHeight());
   return image;
 }
 
 Image Scene::renderBlinnPhong() {
-  Image image(camera.getWidth(), camera.getHeight());
+  Image image(camera->getWidth(), camera->getHeight());
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleBlinnPhong(r); };
 
   int done = 0;
   auto start = std::chrono::high_resolution_clock::now();
 
-  printProgress(0, camera.getHeight());
+  printProgress(0, camera->getHeight());
 
 #pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done)
-  for (int y = 0; y < camera.getHeight(); y++) {
-    for (int x = 0; x < camera.getWidth(); x++) {
+  for (int y = 0; y < camera->getHeight(); y++) {
+    for (int x = 0; x < camera->getWidth(); x++) {
       image.setColor(x, y, sample(x, y, 25, colourSampler));
     }
     auto now = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
-    printProgress(++done, camera.getHeight(), elapsed);
+    printProgress(++done, camera->getHeight(), elapsed);
   }
   return image;
 }
 
 Image Scene::renderPathtracer() {
-  Image image(camera.getWidth(), camera.getHeight());
-  Image varianceImage(camera.getWidth(), camera.getHeight());
+  Image image(camera->getWidth(), camera->getHeight());
+  Image varianceImage(camera->getWidth(), camera->getHeight());
 
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r); };
 
@@ -133,18 +136,18 @@ Image Scene::renderPathtracer() {
   int done = 0;
   auto start = std::chrono::high_resolution_clock::now();
 
-  printProgress(0, camera.getHeight());
+  printProgress(0, camera->getHeight());
 
 #pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done, baselineSamples, varianceImage)
-  for (int y = 0; y < camera.getHeight(); y++) {
-    for (int x = 0; x < camera.getWidth(); x++) {
+  for (int y = 0; y < camera->getHeight(); y++) {
+    for (int x = 0; x < camera->getWidth(); x++) {
       Colour pixelColour;
       std::vector<Colour> samples;
       double scale = 1.0 / baselineSamples;
       for (int i = 0; i < baselineSamples; i++) {
         double xOffset = random_double();
         double yOffset = random_double();
-        Ray ray = camera.getRay(x, y, xOffset, yOffset);
+        Ray ray = camera->getRay(x, y, xOffset, yOffset);
         auto colour = samplePathtracer(ray);
         pixelColour += colour * scale;
         samples.push_back(colour);
@@ -159,14 +162,14 @@ Image Scene::renderPathtracer() {
     }
     auto now = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
-    printProgress(++done, camera.getHeight(), elapsed);
+    printProgress(++done, camera->getHeight(), elapsed);
   }
 
   int totalSamples = 0;
-  int maxSamples = (baselineSamples + additionalSamplesMax) * camera.getWidth() * camera.getHeight();
+  int maxSamples = (baselineSamples + additionalSamplesMax) * camera->getWidth() * camera->getHeight();
 #pragma omp parallel for num_threads(8) schedule(dynamic) default(none) shared(image, colourSampler, start, done, baselineSamples, varianceImage, additionalSamplesMax, totalSamples)
-  for (int y = 0; y < camera.getHeight(); y++) {
-    for (int x = 0; x < camera.getWidth(); x++) {
+  for (int y = 0; y < camera->getHeight(); y++) {
+    for (int x = 0; x < camera->getWidth(); x++) {
       Colour pixelColour = image.getColour(x, y);
       Colour pixelVariance = varianceImage.getColour(x, y);
       double variance = pixelVariance.red() + pixelVariance.green() + pixelVariance.blue();
@@ -178,7 +181,7 @@ Image Scene::renderPathtracer() {
       for (int i = 0; i < nSamples; i++) {
           double xOffset = random_double();
           double yOffset = random_double();
-          Ray ray = camera.getRay(x, y, xOffset, yOffset);
+          Ray ray = camera->getRay(x, y, xOffset, yOffset);
           auto colour = samplePathtracer(ray);
           pixelColour += colour * scale;
       }
@@ -186,7 +189,7 @@ Image Scene::renderPathtracer() {
     }
     auto now = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
-    printProgress(++done, camera.getHeight(), elapsed);
+    printProgress(++done, camera->getHeight(), elapsed);
   }
   std::cout << std::endl << "Total samples: " << totalSamples << " out of " << maxSamples << std::endl;
 
@@ -202,7 +205,7 @@ Colour Scene::sample(int x,
   for (int i = 0; i < nSamples; i++) {
     double xOffset = random_double();
     double yOffset = random_double();
-    Ray ray = camera.getRay(x, y, xOffset, yOffset);
+    Ray ray = camera->getRay(x, y, xOffset, yOffset);
     pixelColour += sampleFunction(*this, ray) * scale;
   }
   return pixelColour;
@@ -278,7 +281,7 @@ Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
   for (const auto &lightSource : lightSources) {
     Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
     Vector3D reflectionDir = (-lightDir).reflect(normal).normalize();
-    Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
+    Vector3D viewDir = (camera->getPosition() - hitPoint).normalize();
 
     if (!isInShadow(hitPoint, *lightSource)) {
       double specIntensity = std::pow(std::max(viewDir.dot(reflectionDir), 0.0), material.getSpecularExponent());
@@ -329,7 +332,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   // Diffuse and specular calculations for each light source
   for (const auto &lightSource : lightSources) {
     auto [lightDir, lightDistance] = lightSource->getDirectionAndDistance(hitPoint);
-    Vector3D viewDir = (camera.getPosition() - hitPoint).normalize();
+    Vector3D viewDir = (camera->getPosition() - hitPoint).normalize();
     Vector3D halfDir = (lightDir + viewDir).normalize();
 
     Colour lightIntensity = isInShadowPathtracer(

@@ -15,6 +15,8 @@ class PinholeCamera : public Camera {
                 int height);
   explicit PinholeCamera(JsonObject cameraJson);
   ~PinholeCamera();
+
+  [[nodiscard]] Ray getRay(double x, double y, double xOffset = 0.5, double yOffset = 0.5) const override;
 };
 
 #endif //CGRAYTRACER_SRC_PINHOLECAMERA_H_
