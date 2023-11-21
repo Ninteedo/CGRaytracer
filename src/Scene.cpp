@@ -314,8 +314,6 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
   Vector3D normal = hitShape->getSurfaceNormal(hitPoint).normalize();
   Material material = hitShape->getMaterial();
 
-  bool isExitRay = ray.direction.dot(normal) > 0;
-
   Colour baseDiffuse = material.getDiffuseColour();
   if (material.getTexture()) {
     Vector2D uv = hitShape->getUVCoordinates(hitPoint).value();
@@ -378,12 +376,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
     colour += reflectSample * reflectance;
   }
   if (material.getIsRefractive()) {
-    Vector3D refractDir;
-    if (isExitRay) {
-      refractDir = ray.direction.refract(-normal, material.getRefractiveIndex()).normalize();
-    } else {
-      refractDir = ray.direction.refract(normal,  1 / material.getRefractiveIndex()).normalize();
-    }
+    Vector3D refractDir = ray.direction.refract(normal, material.getRefractiveIndex());
     if (material.getRoughness() > 0) {
       refractDir = (refractDir + normal.randomInHemisphere() * material.getRoughness()).normalize();
     }
@@ -429,13 +422,7 @@ Colour Scene::isInShadowPathtracer(const Ray &shadowRay, Colour lightIntensity, 
     // Calculate the refractive ray
     double refractiveIndex = material.getRefractiveIndex();
     Vector3D normal = hitShape->getSurfaceNormal(hitPoint);
-    bool isExitRay = shadowRay.direction.dot(normal) > 0;
-    Vector3D refractDirection;  // = currentRay->direction;
-    if (isExitRay) {
-      refractDirection = shadowRay.direction.refract(-normal, refractiveIndex).normalize();
-    } else {
-      refractDirection = shadowRay.direction.refract(normal, 1 / refractiveIndex).normalize();
-    }
+    Vector3D refractDirection = shadowRay.direction.refract(normal, material.getRefractiveIndex());
 
     Vector3D lightDirection = (lightPosition - shadowRay.origin).normalize();
 
@@ -506,12 +493,7 @@ SampleRecord Scene::samplePathtracer(const Ray &ray, int depth) {
   if (material.getIsRefractive()) {
     double refractiveIndex = material.getRefractiveIndex();
     Vector3D refractDirection;
-    bool isExitRay = ray.direction.dot(normal) > 0;
-    if (isExitRay) {
-      refractDirection = ray.direction.refract(-normal, refractiveIndex);
-    } else {
-      refractDirection = ray.direction.refract(normal, 1 / refractiveIndex);
-    }
+    Vector3D refractDir = ray.direction.refract(normal, material.getRefractiveIndex());
     refractDirection = (refractDirection + normal.randomInHemisphere() * material.getRoughness()).normalize();
     Ray refractRay(hitPoint, refractDirection);
     auto [newRefractionColour, refractionDistance] = samplePathtracer(refractRay, depth + 1);

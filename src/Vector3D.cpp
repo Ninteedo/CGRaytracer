@@ -141,14 +141,22 @@ Vector3D Vector3D::reflect(const Vector3D &normal, double roughness) const {
   return *this - normal * 2 * dot(normal) + roughnessVector;
 }
 
-Vector3D Vector3D::refract(const Vector3D &normal, double refractiveFactor) const {
+Vector3D Vector3D::refract(const Vector3D &normal, double refractiveIndex) const {
   // refractive factor is incident medium refractive index / refractive medium refractive index
   // use Snell's law to compute the refracted ray
-  const double cosI = -dot(normal);
-  const double sinT2 = refractiveFactor * refractiveFactor * (1.0 - cosI * cosI);
-  if(sinT2 > 1.0) return reflect(normal); // TIR
+  bool isExitRay = dot(normal) > 0;
+  Vector3D properNormal = normal;
+  if (isExitRay) {
+    properNormal = -normal;
+  } else {
+    refractiveIndex = 1 / refractiveIndex;
+  }
+
+  const double cosI = -dot(properNormal);
+  const double sinT2 = refractiveIndex * refractiveIndex * (1.0 - cosI * cosI);
+  if(sinT2 > 1.0) return reflect(properNormal); // TIR
   const double cosT = sqrt(1.0 - sinT2);
-  return *this * refractiveFactor + normal * (refractiveFactor * cosI - cosT);
+  return *this * refractiveIndex + properNormal * (refractiveIndex * cosI - cosT);
 }
 
 std::ostream &operator<<(std::ostream &os, const Vector3D &v) {
