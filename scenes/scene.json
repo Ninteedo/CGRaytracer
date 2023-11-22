@@ -1,6 +1,6 @@
 {
     "nbounces":8, 
-    "rendermode":"binary",
+    "rendermode":"pathtracer",
     "camera":
         { 
             "type":"pinhole", 
@@ -70,17 +70,21 @@
                     "v1": [0.75, 0.0, 2],
                     "v2": [0, 0.75, 2.25],
                     "material":
-                        { 
-                            "ks":0.3, 
-                            "kd":0.9, 
-                            "specularexponent":2, 
-                            "diffusecolor":[0.8, 0.5, 0.8],
-                            "specularcolor":[1.0,1.0,1.0],
-                            "isreflective":true,
-                            "reflectivity":1.0,
-                            "isrefractive":false,
-                            "refractiveindex":1.0 
-                        } 
+                    { 
+                        "type":"metal",
+                        "ks":0.3, 
+                        "kd":0.9, 
+                        "specularexponent":2, 
+                        "diffusecolor":[0.8, 0.5, 0.8],
+                        "specularcolor":[1.0,1.0,1.0],
+                        "isreflective":true,
+                        "reflectivity":1.0,
+                        "isrefractive":false,
+                        "refractiveindex":1.0,
+                        "basecolor": [0.8, 0.8, 0.5],
+                        "roughness": 0.0,
+                        "fresnelreflectance": 0.7
+                    } 
                 },
                 {
                     "type": "triangle",
@@ -89,6 +93,7 @@
                     "v2": [0, 0.75, 2.25],
                     "material":
                         { 
+                            "type":"metal",
                             "ks":0.3, 
                             "kd":0.9, 
                             "specularexponent":2, 
@@ -97,7 +102,10 @@
                             "isreflective":true,
                             "reflectivity":1.0,
                             "isrefractive":false,
-                            "refractiveindex":1.0 
+                            "refractiveindex":1.0,
+                            "basecolor": [0.9, 0.2, 0.9],
+                            "roughness": 0.0,
+                            "fresnelreflectance": 0.2
                         } 
                 },
                 { 
@@ -108,13 +116,14 @@
                         { 
                             "ks":0.1, 
                             "kd":0.9, 
-                            "specularexponent":20, 
+                            "specularexponent":1, 
                             "diffusecolor":[0.8, 0.5, 0.5],
                             "specularcolor":[1.0,1.0,1.0],
                             "isreflective":false,
                             "reflectivity":1.0,
                             "isrefractive":false,
-                            "refractiveindex":1.0 
+                            "refractiveindex":1.0,
+                            "nottexture": "textures/Eldlich.ppm"
                         } 
                 },
                 { 
@@ -123,15 +132,20 @@
                     "radius":0.2, 
                     "material":
                         { 
-                            "ks":0.1, 
-                            "kd":0.9, 
+                            "type": "metal",
+                            "ks":0.5, 
+                            "kd":0.5, 
                             "specularexponent":20, 
-                            "diffusecolor":[0.8, 0.5, 0.5],
+                            "diffusecolor":[0.0, 0.0, 0.0],
                             "specularcolor":[1.0,1.0,1.0],
                             "isreflective":true,
                             "reflectivity":1.0,
                             "isrefractive":false,
-                            "refractiveindex":1.0 
+                            "refractiveindex":1.5,
+                            "transmittancecolor":[0.2, 0.0, 0.0],
+                            "basecolor": [0.9, 0.9, 0.9],
+                            "roughness": 0,
+                            "fresnelreflectance": 1.0
                         } 
                 }  
             ] 
