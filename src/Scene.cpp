@@ -90,7 +90,7 @@ Image Scene::renderBinary() {
 Image Scene::renderShaded() {
   Image image(camera->getWidth(), camera->getHeight());
 
-  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleDiffuseAndSpecular(r); };
+  auto colourSampler = [this](const Scene &s, const Ray &r) { return this->sampleShaded(r); };
 
   for (int y = 0; y < camera->getHeight(); y++) {
     printProgress(y, camera->getHeight());
@@ -245,81 +245,6 @@ Colour Scene::sampleShaded(const Ray &ray, int depth) {
   double b = std::fabs(normal.getZ());
 
   return Colour(r, g, b);
-}
-
-Colour Scene::sampleDiffuse(const Ray &ray, int depth) {
-  // Base case: if we've reached the maximum number of bounces, return black
-  if (depth >= nBounces) return backgroundColour;
-
-  // Check if the ray intersects with any objects in the scene
-  std::optional<std::pair<std::shared_ptr<Shape>, double>> intersection = checkIntersection(ray);
-
-  // If the ray doesn't intersect with anything, return the background backgroundColour
-  if (!intersection.has_value()) return backgroundColour;
-
-  // Get the normal of the surface at the intersection point
-  Vector3D normal = intersection.value().first->getSurfaceNormal(ray.at(intersection.value().second));
-
-  // Get a random direction in the hemisphere of the normal
-  Vector3D bounceDirection = normal + normal.randomInHemisphere();
-
-  // Create a new ray starting at the intersection point and going in the bounce direction
-  Ray bounceRay = Ray(ray.at(intersection.value().second), bounceDirection);
-
-  // Get the diffuse factor and backgroundColour of the object
-  double diffuseFactor = intersection.value().first->getMaterial()->getKd();
-  Colour diffuseColour = intersection.value().first->getMaterial()->getDiffuseColour();
-
-  // Calculate the backgroundColour of the bounce ray
-  Colour bounceColour = sampleDiffuse(bounceRay, depth + 1);
-
-  return Colour(bounceColour * diffuseFactor * diffuseColour);
-}
-
-Colour Scene::sampleDiffuseAndSpecular(const Ray &ray, int depth) {
-  if (depth >= nBounces) return backgroundColour;
-
-  auto intersection = checkIntersection(ray);
-  if (!intersection) return backgroundColour;
-
-  auto [hitShape, hitDistance] = *intersection;
-  Vector3D hitPoint = ray.at(hitDistance);
-  Vector3D normal = hitShape->getSurfaceNormal(hitPoint).normalize();
-  Material* material = hitShape->getMaterial();
-
-  Colour ambientColour = Colour(); // Define your scene's ambient light colour if any
-  Colour colour = ambientColour; // Initialize with ambient light
-
-  // Sample diffuse component
-  Vector3D bounceDirection = normal.randomInHemisphere();
-  Ray bounceRay(hitPoint + bounceDirection, bounceDirection);
-  Colour bounceColour = sampleDiffuseAndSpecular(bounceRay, depth + 1);
-  Colour diffuseColour = material->getDiffuseColour();
-  colour += bounceColour * material->getKd() * diffuseColour;
-
-  // Compute the specular component for each light source
-  Colour specColour = Colour();
-  for (const auto &lightSource : lightSources) {
-    Vector3D lightDir = (lightSource->getPosition() - hitPoint).normalize();
-    Vector3D reflectionDir = (-lightDir).reflect(normal).normalize();
-    Vector3D viewDir = (camera->getPosition() - hitPoint).normalize();
-
-    if (!isInShadow(hitPoint, *lightSource)) {
-      double specIntensity = std::pow(std::max(viewDir.dot(reflectionDir), 0.0), material->getSpecularExponent());
-      specColour += lightSource->getIntensity() * specIntensity * material->getSpecularColour();
-    }
-  }
-  colour += specColour * material->getKs();
-
-  // Reflectivity
-  if (material->getIsReflective()) {
-    Vector3D reflectDirection = ray.direction.reflect(normal);
-    Ray reflectRay(hitPoint, reflectDirection);
-    Colour reflectColour = sampleDiffuseAndSpecular(reflectRay, depth + 1);
-    colour += reflectColour * material->getReflectivity();
-  }
-
-  return colour;
 }
 
 Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
@@ -580,7 +505,7 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
 
     // Indirect illumination
     int nSamples = std::max(1, 10 - depth * 2);
-    Colour bounceColour(0, 0, 0);
+    Colour indirectIllumination(0, 0, 0);
     for (int i = 0; i < nSamples; i++) {
       // Get a random direction in the hemisphere of the normal
       Vector3D bounceDirection = normal + normal.randomInHemisphere();  // * material->getKd();
@@ -591,9 +516,10 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
       auto newBounceColour = samplePathtracer(bounceRay, depth + 1);
 
       // Calculate the colour of the bounce ray
-      bounceColour += Colour(newBounceColour / nSamples);  // (nSamples * bounceDistance * bounceDistance));
+      indirectIllumination += newBounceColour;
     }
-    brdfColour = Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
+    indirectIllumination = Colour(indirectIllumination * diffuseFactor * diffuseColour / nSamples);
+    brdfColour = Colour(directIllumination + indirectIllumination * diffuseFactor * diffuseColour);
   }
   return brdfColour;
 
