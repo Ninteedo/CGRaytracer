@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <optional>
 #include "GlassMaterial.h"
 
 GlassMaterial::GlassMaterial(JsonObject materialJson) : Material(materialJson) {
@@ -25,7 +26,10 @@ Colour GlassMaterial::evaluateReflection(const Vector3D &incident, const Vector3
   return Colour(fresnelReflectance, fresnelReflectance, fresnelReflectance); // Reflectance color
 }
 
-Colour GlassMaterial::evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const {
+Colour GlassMaterial::evaluateBRDF(const Vector3D &incident,
+                                   const Vector3D &outgoing,
+                                   const Vector3D &normal,
+                                   std::optional<Vector2D> uv) const {
   double r = reflectivity(incident, normal);
 
   // Return a color representing the proportion of light that's reflected.

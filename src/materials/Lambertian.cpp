@@ -1,3 +1,4 @@
+#include <optional>
 #include "Lambertian.h"
 
 Lambertian::Lambertian(JsonObject materialJson) : Material(
@@ -18,10 +19,18 @@ Lambertian::Lambertian(JsonObject materialJson) : Material(
   }
 }
 
-Colour Lambertian::evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const {
+Colour Lambertian::evaluateBRDF(const Vector3D &incident,
+                                const Vector3D &outgoing,
+                                const Vector3D &normal,
+                                std::optional<Vector2D> uv) const {
+  Colour diffuseBaseColour = getDiffuseColour();
+  if (isTextured() && uv.has_value()) {
+    diffuseBaseColour = texture->getUVColour(uv.value());
+  }
+
   // Diffuse Contribution
   double lambertian = std::abs(normal.dot(incident));
-  Colour diffuseContribution = Colour(getDiffuseColour() * lambertian * getKd());
+  Colour diffuseContribution = Colour(diffuseBaseColour * lambertian * getKd());
 
   // Specular Contribution
   Vector3D halfDirection = (incident + outgoing).normalize();

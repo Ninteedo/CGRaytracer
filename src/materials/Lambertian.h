@@ -7,7 +7,10 @@ class Lambertian : public Material {
  public:
   explicit Lambertian(JsonObject materialJson);
 
-  [[nodiscard]] Colour evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const override;
+  [[nodiscard]] Colour evaluateBRDF(const Vector3D &incident,
+                                    const Vector3D &outgoing,
+                                    const Vector3D &normal,
+                                    std::optional<Vector2D> uv) const override;
 };
 
 const JsonValue DEFAULT_MATERIAL_JSON = JsonValue(JsonObject(std::map<std::string, JsonValue> {

@@ -40,7 +40,10 @@ double smithGeometry(const Vector3D &normal, const Vector3D &incident, const Vec
   return 1.0 / (1.0 + lambdaIncident + lambdaOutgoing);
 }
 
-Colour MetalMaterial::evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const {
+Colour MetalMaterial::evaluateBRDF(const Vector3D &incident,
+                                   const Vector3D &outgoing,
+                                   const Vector3D &normal,
+                                   std::optional<Vector2D> uv) const {
   // Fresnel term calculation (using Schlick's approximation or a more complex method)
   Colour F = fresnelSchlick(incident, normal, baseColor, fresnelReflectance);
 

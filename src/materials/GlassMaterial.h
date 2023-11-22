@@ -11,7 +11,10 @@ class GlassMaterial : public Material {
  public:
   explicit GlassMaterial(JsonObject materialJson);
 
-  [[nodiscard]] Colour evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const override;
+  [[nodiscard]] Colour evaluateBRDF(const Vector3D &incident,
+                                    const Vector3D &outgoing,
+                                    const Vector3D &normal,
+                                    std::optional<Vector2D> uv) const override;
 
   [[nodiscard]] std::pair<Colour, Vector3D> evaluateTransmission(const Vector3D &incident, const Vector3D &normal) const;
 

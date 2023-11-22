@@ -131,7 +131,7 @@ Image Scene::renderPathtracer() {
   auto colourSampler = [this](const Scene &s, const Ray &r) { return this->samplePathtracer(r); };
 
   int baselineSamples = 5;
-  int additionalSamplesMax = 5;
+  int additionalSamplesMax = 50;
 
   int done = 0;
   auto start = std::chrono::high_resolution_clock::now();
@@ -489,14 +489,14 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
     }
 
     // Evaluate the BRDF for the final reflection direction
-    Colour brdfContribution = material->evaluateBRDF(-ray.direction, reflectDir, normal).clamp();
+    Colour brdfContribution = material->evaluateBRDF(-ray.direction, reflectDir, normal, std::nullopt).clamp();
 
     // Cast a new ray in the reflection direction and accumulate its contribution
     Ray reflectRay(hitPoint, reflectDir);
     auto reflectSample = samplePathtracer(reflectRay, depth + 1);
     brdfColour = Colour(reflectSample * brdfContribution);
   } else if (materialType == MaterialType::GLASS) {
-    double fresnelReflectance = (double)material->evaluateBRDF(-ray.direction, normal, normal).getRed() / 255; // Assuming RGB components are the same
+    double fresnelReflectance = (double) material->evaluateBRDF(-ray.direction, normal, normal, std::nullopt).getRed() / 255; // Assuming RGB components are the same
     double reflectProb = fresnelReflectance;
     double refractProb = 1.0 - fresnelReflectance;
 
@@ -519,9 +519,10 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
     // Get the diffuse factor and backgroundColour of the object
     double diffuseFactor = intersection.value().first->getMaterial()->getKd();
     Colour diffuseColour = intersection.value().first->getMaterial()->getDiffuseColour();
+    std::optional<Vector2D> uv = std::nullopt;
     if (material->isTextured()) {
-      Vector2D uv = hitShape->getUVCoordinates(hitPoint).value();
-      diffuseColour = material->getTexture()->getUVColour(uv);
+      uv = hitShape->getUVCoordinates(hitPoint).value();
+        diffuseColour = material->getTexture()->getUVColour(uv.value());
     }
 
     // Direct illumination
@@ -538,21 +539,8 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
             hitPoint + (toLight * distanceToLight));
 
         if (lightIntensity.max() > 0) {
-          // Specular Contribution
-          Vector3D halfDirection = (lightDirection + outgoingDirection).normalize();
-          // Compute the illumination contribution
-          // Diffuse Contribution
-          double lambertian = std::abs(normal.dot(toLight));
-          Colour diffuseContribution = Colour(diffuseColour * lambertian * diffuseFactor * lightIntensity);
-
-          // Specular Contribution
-          double specularCoefficient = pow(std::max(normal.dot(halfDirection), 0.0), material->getSpecularExponent());
-          Colour specularContribution =
-              Colour(material->getSpecularColour() * specularCoefficient * lightIntensity * material->getKs());
-
-          // Combine contributions
-          directIllumination += (diffuseContribution + specularContribution)
-              / (lightSource->samplingFactor * distanceToLight * distanceToLight);
+          Colour brdfContribution = hitShape->getMaterial()->evaluateBRDF(lightDirection, outgoingDirection, normal, uv);
+          directIllumination += Colour(brdfContribution * lightIntensity) / (lightSource->samplingFactor * distanceToLight * distanceToLight);
         }
       }
     }

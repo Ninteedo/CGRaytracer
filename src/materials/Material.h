@@ -2,6 +2,7 @@
 #ifndef CGRAYTRACER_MATERIAL_H
 #define CGRAYTRACER_MATERIAL_H
 
+#include <optional>
 #include "../Colour.h"
 #include "../JSONParser.h"
 #include "../Image.h"
@@ -60,7 +61,10 @@ class Material {
 
   [[nodiscard]] MaterialType getType() const;
 
-  [[nodiscard]] virtual Colour evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const = 0;
+  [[nodiscard]] virtual Colour evaluateBRDF(const Vector3D &incident,
+                                            const Vector3D &outgoing,
+                                            const Vector3D &normal,
+                                            std::optional<Vector2D> uv) const = 0;
 };
 
 #endif //CGRAYTRACER_MATERIAL_H
