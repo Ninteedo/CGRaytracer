@@ -124,6 +124,27 @@ Image Scene::renderBlinnPhong() {
   return image;
 }
 
+double getPixelVariance(Image &image, Image &varianceImage, int x, int y) {
+  int neighborOffsets[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+  Colour currentPixelColor = image.getColour(x, y);
+  Colour varianceColour = varianceImage.getColour(x, y);
+  double baseVariance = varianceColour.getX() + varianceColour.getY() + varianceColour.getZ();
+  double neighbourVariance = 0;
+
+  for (auto &offset : neighborOffsets) {
+    int nx = x + offset[0];
+    int ny = y + offset[1];
+
+    // Check if neighbor is within the image bounds
+    if (nx >= 0 && nx < image.getWidth() && ny >= 0 && ny < image.getHeight()) {
+      Colour neighborColor = image.getColour(nx, ny);
+      neighbourVariance += (currentPixelColor - neighborColor).magnitudeSquared(); // or any other difference measure
+    }
+  }
+
+  return baseVariance + (neighbourVariance / 8.0);
+}
+
 Image Scene::renderPathtracer() {
   Image image(camera->getWidth(), camera->getHeight());
   Image varianceImage(camera->getWidth(), camera->getHeight());
@@ -171,9 +192,9 @@ Image Scene::renderPathtracer() {
   for (int y = 0; y < camera->getHeight(); y++) {
     for (int x = 0; x < camera->getWidth(); x++) {
       Colour pixelColour = image.getColour(x, y);
-      Colour pixelVariance = varianceImage.getColour(x, y);
-      double variance = pixelVariance.red() + pixelVariance.green() + pixelVariance.blue();
-      double additionalSamples = std::max(0.0, std::min(1.0, 10 * std::pow(variance, 1.0 / 3.0)));
+//      Colour pixelVariance = varianceImage.getColour(x, y);
+      double variance = getPixelVariance(image, varianceImage, x, y);
+      double additionalSamples = std::clamp(10 * std::pow(variance, 1.0 / 3.0), 0.0, 1.0);
       int nSamples = additionalSamples * additionalSamplesMax;
       totalSamples += nSamples + baselineSamples;
       double scale = 1.0 / (nSamples + baselineSamples);
