@@ -1,6 +1,7 @@
 #include "Vector3D.h"
 #include <iostream>
 #include <cmath>
+#include "Utility.h"
 
 Vector3D::Vector3D() : x(0), y(0), z(0) {}
 

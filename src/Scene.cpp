@@ -472,101 +472,153 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
   Vector3D hitPoint = ray.at(hitDistance);
   Vector3D normal = hitShape->getSurfaceNormal(ray.at(intersection.value().second));
   Material* material = hitShape->getMaterial();
+  MaterialType materialType = material->getType();
 
-  // Reflectivity and refraction
-  double reflectivity = material->getIsReflective();
-  if (material->getIsRefractive()) {
-    // Calculate Schlick's approximation
-    double cosTheta = std::abs(ray.direction.dot(normal));
-    double R0 = std::pow((1 - material->getRefractiveIndex()) / (1 + material->getRefractiveIndex()), 2);
-    reflectivity = R0 + (1 - R0) * std::pow(1 - cosTheta, 5);
-  }
-  reflectivity *= material->getReflectivity();
-
-  Colour reflectColour;
-  if (material->getIsReflective() && reflectivity > 0) {
-    Vector3D reflectDir = ray.direction.reflect(normal).normalize();
+  Colour reflectColour, refractColour;
+  Colour brdfColour;
+  if (materialType == MaterialType::METAL) {
+    Vector3D reflectDir;
+    Vector3D perfectReflectDir = ray.direction.reflect(normal).normalize();
     if (material->getRoughness() > 0) {
-      reflectDir = (reflectDir + normal.randomInHemisphere() * material->getRoughness()).normalize();
+      // Perturb the reflection direction for rough surfaces
+      Vector3D roughReflectDir = (ray.direction.reflect(normal) + normal.randomInHemisphere() * material->getRoughness()).normalize();
+      reflectDir = (perfectReflectDir + (roughReflectDir - perfectReflectDir) * material->getRoughness()).normalize();
+    } else {
+      // Perfect mirror reflection for smooth surfaces
+      reflectDir = perfectReflectDir;
     }
-    Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
+
+    // Evaluate the BRDF for the final reflection direction
+    Colour brdfContribution = material->evaluateBRDF(-ray.direction, reflectDir, normal).clamp();
+
+    // Cast a new ray in the reflection direction and accumulate its contribution
+    Ray reflectRay(hitPoint, reflectDir);
     auto reflectSample = samplePathtracer(reflectRay, depth + 1);
-    reflectColour = Colour(reflectSample * reflectivity);
-  }
+    brdfColour = Colour(reflectSample * brdfContribution);
+  } else if (materialType == MaterialType::GLASS) {
+    double fresnelReflectance = (double)material->evaluateBRDF(-ray.direction, normal, normal).getRed() / 255; // Assuming RGB components are the same
+    double reflectProb = fresnelReflectance;
+    double refractProb = 1.0 - fresnelReflectance;
 
-  Colour refractColour;
-  if (material->getIsRefractive() && reflectivity < 1) {
-    Vector3D refractDir = ray.direction.refract(normal, material->getRefractiveIndex());
-    if (material->getRoughness() > 0) {
-      refractDir = (refractDir + normal.randomInHemisphere() * material->getRoughness()).normalize();
+    // Handle Reflection
+    Colour result;
+    if (reflectProb > 0.01) {
+      Vector3D reflectDir = ray.direction.reflect(normal).normalize();
+      Ray reflectRay(hitPoint, reflectDir);
+      result += samplePathtracer(reflectRay, depth + 1) * reflectProb;
     }
-    Ray refractRay(hitPoint, refractDir);
-    auto refractSample = samplePathtracer(refractRay, depth + 1);
-    refractColour = Colour(refractSample * (1 - reflectivity));
-  }
+    if (refractProb > 0.01) {
+      Vector3D refractDir = ray.direction.refract(normal, material->getRefractiveIndex()).normalize();
+      Ray refractRay(hitPoint, refractDir);
+      result += samplePathtracer(refractRay, depth + 1) * refractProb;
+    }
+    brdfColour = result;
+  } else {
+    // Diffuse illumination
 
-  // Diffuse illumination
+    // Get the diffuse factor and backgroundColour of the object
+    double diffuseFactor = intersection.value().first->getMaterial()->getKd();
+    Colour diffuseColour = intersection.value().first->getMaterial()->getDiffuseColour();
+    if (material->isTextured()) {
+      Vector2D uv = hitShape->getUVCoordinates(hitPoint).value();
+      diffuseColour = material->getTexture()->getUVColour(uv);
+    }
 
-  // Get the diffuse factor and backgroundColour of the object
-  double diffuseFactor = intersection.value().first->getMaterial()->getKd();
-  Colour diffuseColour = intersection.value().first->getMaterial()->getDiffuseColour();
-  if (material->isTextured()) {
-    Vector2D uv = hitShape->getUVCoordinates(hitPoint).value();
-    diffuseColour = material->getTexture()->getUVColour(uv);
-  }
+    // Direct illumination
+    Colour directIllumination(0, 0, 0);
+    for (const auto &lightSource : lightSources) {
+      for (int i = 0; i < lightSource->samplingFactor; i++) {
+        auto [toLight, distanceToLight] = lightSource->getDirectionAndDistance(hitPoint);
+        Vector3D lightDirection = toLight.normalize();
+        Vector3D outgoingDirection = -ray.direction;
 
-  // Direct illumination
-  Colour directIllumination(0, 0, 0);
-  for (const auto &lightSource : lightSources) {
-    for (int i = 0; i < lightSource->samplingFactor; i++) {
-      auto [toLight, distanceToLight] = lightSource->getDirectionAndDistance(hitPoint);
-      Vector3D lightDirection = toLight.normalize();
-      Vector3D outgoingDirection = -ray.direction;
+        Colour lightIntensity = isInShadowPathtracer(
+            Ray(hitPoint, toLight),
+            lightSource->getIntensity(),
+            hitPoint + (toLight * distanceToLight));
 
-      Colour lightIntensity = isInShadowPathtracer(
-          Ray(hitPoint, toLight),
-          lightSource->getIntensity(),
-          hitPoint + (toLight * distanceToLight));
+        if (lightIntensity.max() > 0) {
+          // Specular Contribution
+          Vector3D halfDirection = (lightDirection + outgoingDirection).normalize();
+          // Compute the illumination contribution
+          // Diffuse Contribution
+          double lambertian = std::abs(normal.dot(toLight));
+          Colour diffuseContribution = Colour(diffuseColour * lambertian * diffuseFactor * lightIntensity);
 
-      if (lightIntensity.max() > 0) {
-        // Use BRDF to compute illumination contribution
-        Colour brdfContribution = hitShape->getMaterial()->evaluateBRDF(lightDirection, outgoingDirection, normal);
-        directIllumination += Colour(brdfContribution * lightIntensity) / (lightSource->samplingFactor * distanceToLight * distanceToLight);
+          // Specular Contribution
+          double specularCoefficient = pow(std::max(normal.dot(halfDirection), 0.0), material->getSpecularExponent());
+          Colour specularContribution =
+              Colour(material->getSpecularColour() * specularCoefficient * lightIntensity * material->getKs());
+
+          // Combine contributions
+          directIllumination += (diffuseContribution + specularContribution)
+              / (lightSource->samplingFactor * distanceToLight * distanceToLight);
+        }
       }
     }
-  }
-  // Russian Roulette termination
-  if (depth > 3) {
-    double terminationProbability = std::max(0.05, 1 - reflectColour.max());
-    double randomValue = random_double();
 
-    if (randomValue < terminationProbability) {
-      return directIllumination;
-    } else {
-      directIllumination = Colour(directIllumination / (1 - terminationProbability));
+    // Russian Roulette termination
+    if (depth > 3) {
+      double terminationProbability = std::max(0.05, 1 - reflectColour.max());
+      double randomValue = random_double();
+
+      if (randomValue < terminationProbability) {
+        return directIllumination;
+      } else {
+        directIllumination = Colour(directIllumination / (1 - terminationProbability));
+      }
     }
+
+    // Indirect illumination
+    int nSamples = std::max(1, 10 - depth * 2);
+    Colour bounceColour(0, 0, 0);
+    for (int i = 0; i < nSamples; i++) {
+      // Get a random direction in the hemisphere of the normal
+      Vector3D bounceDirection = normal + normal.randomInHemisphere();  // * material->getKd();
+
+      // Create a new ray starting at the intersection point and going in the bounce direction
+      Ray bounceRay = Ray(ray.at(hitDistance), bounceDirection.normalize());
+
+      auto newBounceColour = samplePathtracer(bounceRay, depth + 1);
+
+      // Calculate the colour of the bounce ray
+      bounceColour += Colour(newBounceColour / nSamples);  // (nSamples * bounceDistance * bounceDistance));
+    }
+    brdfColour = Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
   }
+  return brdfColour;
 
-  // Indirect illumination
-  int nSamples = std::max(1, 10 - depth * 2);
-  Colour bounceColour(0, 0, 0);
-  for (int i = 0; i < nSamples; i++) {
-    // Get a random direction in the hemisphere of the normal
-    Vector3D bounceDirection = normal + normal.randomInHemisphere();  // * material->getKd();
-
-    // Create a new ray starting at the intersection point and going in the bounce direction
-    Ray bounceRay = Ray(ray.at(hitDistance), bounceDirection.normalize());
-
-    auto newBounceColour = samplePathtracer(bounceRay, depth + 1);
-
-    // Calculate the colour of the bounce ray
-    bounceColour += Colour(newBounceColour / nSamples);  // (nSamples * bounceDistance * bounceDistance));
-  }
-  Colour totalIllumination = Colour(directIllumination + bounceColour * diffuseFactor * diffuseColour);
-  return Colour(
-      totalIllumination
-          + reflectColour
-          + refractColour);
+//  // Reflectivity and refraction
+//  double reflectivity = material->getIsReflective();
+//  if (material->getIsRefractive()) {
+//    // Calculate Schlick's approximation
+//    double cosTheta = std::abs(ray.direction.dot(normal));
+//    double R0 = std::pow((1 - material->getRefractiveIndex()) / (1 + material->getRefractiveIndex()), 2);
+//    reflectivity = R0 + (1 - R0) * std::pow(1 - cosTheta, 5);
+//  }
+//  reflectivity *= material->getReflectivity();
+//
+//  Colour reflectColour;
+//  if (material->getIsReflective() && reflectivity > 0) {
+//    Vector3D reflectDir = ray.direction.reflect(normal).normalize();
+//    if (material->getRoughness() > 0) {
+//      reflectDir = (reflectDir + normal.randomInHemisphere() * material->getRoughness()).normalize();
+//    }
+//    Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
+//    auto reflectSample = samplePathtracer(reflectRay, depth + 1);
+//    reflectColour = Colour(reflectSample * reflectivity);
+//  }
+//
+//  Colour refractColour;
+//  if (material->getIsRefractive() && reflectivity < 1) {
+//    Vector3D refractDir = ray.direction.refract(normal, material->getRefractiveIndex());
+//    if (material->getRoughness() > 0) {
+//      refractDir = (refractDir + normal.randomInHemisphere() * material->getRoughness()).normalize();
+//    }
+//    Ray refractRay(hitPoint, refractDir);
+//    auto refractSample = samplePathtracer(refractRay, depth + 1);
+//    refractColour = Colour(refractSample * (1 - reflectivity));
+//  }
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray, Interval interval) const {

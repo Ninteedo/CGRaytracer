@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Cylinder.h"
 #include "../materials/Lambertian.h"
+#include "../Utility.h"
 
 Cylinder::Cylinder(const Vector3D &centre, const Vector3D &axis, double radius, double height,
                    Material *material, Material *topMaterial, Material *bottomMaterial)

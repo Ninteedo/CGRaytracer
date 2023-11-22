@@ -47,6 +47,10 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
         src/cameras/FiniteApertureCamera.h
         src/materials/Lambertian.cpp
         src/materials/Lambertian.h
+        src/materials/MetalMaterial.cpp
+        src/materials/MetalMaterial.h
+        src/materials/GlassMaterial.cpp
+        src/materials/GlassMaterial.h
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

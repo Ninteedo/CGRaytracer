@@ -20,12 +20,12 @@ Lambertian::Lambertian(JsonObject materialJson) : Material(
 
 Colour Lambertian::evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const {
   // Diffuse Contribution
-  double lambertian = std::max(normal.dot(incident), 0.0);
+  double lambertian = std::abs(normal.dot(incident));
   Colour diffuseContribution = Colour(getDiffuseColour() * lambertian * getKd());
 
   // Specular Contribution
   Vector3D halfDirection = (incident + outgoing).normalize();
-  double specularCoefficient = pow(std::max(normal.dot(halfDirection), 0.0), getSpecularExponent());
+  double specularCoefficient = pow(std::abs(normal.dot(halfDirection)), getSpecularExponent());
   Colour specularContribution = Colour(getSpecularColour() * specularCoefficient * getKs());
 
   // Combine contributions

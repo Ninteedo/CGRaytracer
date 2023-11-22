@@ -1,4 +1,5 @@
 #include "FiniteApertureCamera.h"
+#include "../Utility.h"
 #include <cmath>
 
 FiniteApertureCamera::FiniteApertureCamera(const Vector3D &position,

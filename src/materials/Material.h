@@ -6,6 +6,10 @@
 #include "../JSONParser.h"
 #include "../Image.h"
 
+enum MaterialType {
+  LAMBERTIAN, METAL, GLASS
+};
+
 class Material {
  protected:
   const double ks;
@@ -20,6 +24,8 @@ class Material {
   const double roughness;
 
   const Image *texture = nullptr;
+
+  MaterialType type;
 
  public:
   Material(double ks,
@@ -51,6 +57,8 @@ class Material {
   [[nodiscard]] const Image *getTexture() const;
 
   [[nodiscard]] bool isTextured() const;
+
+  [[nodiscard]] MaterialType getType() const;
 
   [[nodiscard]] virtual Colour evaluateBRDF(const Vector3D &incident, const Vector3D &outgoing, const Vector3D &normal) const = 0;
 };

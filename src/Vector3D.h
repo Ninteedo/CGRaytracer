@@ -3,7 +3,6 @@
 #define VECTOR3D_H
 
 #include "JSONParser.h"
-#include "Utility.h"
 
 class Vector3D {
  public:

@@ -1,5 +1,7 @@
 #include "Material.h"
 #include "Lambertian.h"
+#include "MetalMaterial.h"
+#include "GlassMaterial.h"
 
 #include <utility>
 
@@ -24,18 +26,32 @@ Material::Material(JsonObject materialJson)
     materialJson["isrefractive"].asBool(),
     materialJson["refractiveindex"].asDouble(),
     getOrDefault(materialJson, "roughness", JsonValue(0.0)).asDouble()
-    ) {
-    if (materialJson.count("texture") > 0) {
-        std::string texturePath = materialJson["texture"].asString();
-        texture = new Image(texturePath);
+) {
+  if (materialJson.contains("texture")) {
+    std::string texturePath = materialJson["texture"].asString();
+    texture = new Image(texturePath);
+  }
+  type = LAMBERTIAN;
+  if (materialJson.contains("type")) {
+    if (materialJson["type"].asString() == "metal") {
+      type = METAL;
+    } else if (materialJson["type"].asString() == "glass") {
+      type = GLASS;
     }
+  }
 }
 
 Material::~Material() = default;
 
-Material* Material::fromJson(JsonObject materialJson) {
+Material *Material::fromJson(JsonObject materialJson) {
   if (!materialJson.contains("type") || materialJson["type"].asString() == "lambertian") {
     return new Lambertian(materialJson);
+  } else if (materialJson["type"].asString() == "metal") {
+    return new MetalMaterial(materialJson);
+  } else if (materialJson["type"].asString() == "glass") {
+    return new GlassMaterial(materialJson);
+  } else {
+    throw std::runtime_error("Unknown material type: " + materialJson["type"].asString());
   }
 }
 
@@ -65,4 +81,8 @@ const Image *Material::getTexture() const {
 
 bool Material::isTextured() const {
   return texture != nullptr;
+}
+
+MaterialType Material::getType() const {
+  return type;
 }
