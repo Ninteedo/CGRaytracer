@@ -34,9 +34,9 @@ int Colour::getBlue() const {
 }
 
 std::string Colour::toPPM() const {
-  return std::to_string(linear_to_gamma(getRed())) + " "
-      + std::to_string(linear_to_gamma(getGreen())) + " "
-      + std::to_string(linear_to_gamma(getBlue()));
+  return std::to_string((int)linear_to_gamma(getRed())) + " "
+      + std::to_string((int)linear_to_gamma(getGreen())) + " "
+      + std::to_string((int)linear_to_gamma(getBlue()));
 }
 
 Colour Colour::clamp() const {
