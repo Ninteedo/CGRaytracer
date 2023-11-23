@@ -10,7 +10,7 @@ Image::Image(int width, int height)
 }
 
 Image::Image(const std::string &filename) {
-  std::ifstream file("../scenes/" + filename);
+  std::ifstream file(filename);
 
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open the file for reading");
@@ -62,8 +62,8 @@ Colour Image::getColour(int x, int y) const {
 }
 
 Colour Image::getUVColour(double u, double v) const {
-  int x = static_cast<int>(u * width);
-  int y = static_cast<int>(v * height);
+  int x = static_cast<int>(u * width) % width;
+  int y = static_cast<int>(v * height) % height;
   return getColour(x, y);
 }
 
@@ -110,4 +110,13 @@ void Image::saveToPPM(const std::string &filename) const {
   }
 
   file.close();
+}
+
+Image *Image::loadFromFile(const std::string &filename) {
+  if (textures.contains(filename)) {
+    return textures[filename];
+  }
+  auto *image = new Image(filename);
+  textures[filename] = image;
+  return image;
 }

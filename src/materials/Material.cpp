@@ -29,7 +29,7 @@ Material::Material(JsonObject materialJson)
 ) {
   if (materialJson.contains("texture")) {
     std::string texturePath = materialJson["texture"].asString();
-    texture = new Image(texturePath);
+    texture = Image::loadFromFile(texturePath);
   }
   type = LAMBERTIAN;
   if (materialJson.contains("type")) {

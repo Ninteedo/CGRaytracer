@@ -26,6 +26,8 @@ class Image {
 
   void saveToPPM(const std::string &filename) const;
 
+  static Image* loadFromFile(const std::string &filename);
+
  private:
   int width;
   int height;
@@ -33,5 +35,7 @@ class Image {
 
   [[nodiscard]] bool isInside(int x, int y) const;
 };
+
+static std::map<std::string, Image*> textures = std::map<std::string, Image*>();
 
 #endif // IMAGE_H

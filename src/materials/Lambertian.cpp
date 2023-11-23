@@ -15,7 +15,7 @@ Lambertian::Lambertian(JsonObject materialJson) : Material(
 ) {
   if (materialJson.count("texture") > 0) {
     std::string texturePath = materialJson["texture"].asString();
-    texture = new Image(texturePath);
+    texture = Image::loadFromFile(texturePath);
   }
   type = LAMBERTIAN;
 }
