@@ -17,6 +17,7 @@ Lambertian::Lambertian(JsonObject materialJson) : Material(
     std::string texturePath = materialJson["texture"].asString();
     texture = new Image(texturePath);
   }
+  type = LAMBERTIAN;
 }
 
 Colour Lambertian::evaluateBRDF(const Vector3D &incident,

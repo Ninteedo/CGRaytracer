@@ -5,6 +5,7 @@ MetalMaterial::MetalMaterial(JsonObject materialJson) : Material(materialJson) {
   baseColor = Colour(materialJson["basecolor"].asArray());
   roughness = materialJson["roughness"].asDouble();
   fresnelReflectance = materialJson["fresnelreflectance"].asDouble();
+  type = METAL;
 }
 
 Colour fresnelSchlick(const Vector3D &incident, const Vector3D &normal, const Colour &baseColor, double fresnelReflectance) {
@@ -48,7 +49,7 @@ Colour MetalMaterial::evaluateBRDF(const Vector3D &incident,
   Colour F = fresnelSchlick(incident, normal, baseColor, fresnelReflectance);
 
   // Normal Distribution Function (NDF) for microfacet roughness (using GGX/Trowbridge-Reitz, for example)
-  double D = 1; // ggxTrowbridgeReitz(normal, incident, roughness);
+  double D = 1;  // ggxTrowbridgeReitz(normal, incident, roughness);
 
   // Geometry function (Smith's method, for example, to account for shadowing/masking)
   double G = smithGeometry(normal, incident, outgoing, roughness);

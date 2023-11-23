@@ -5,6 +5,7 @@
 GlassMaterial::GlassMaterial(JsonObject materialJson) : Material(materialJson) {
   refractiveIndex = materialJson["refractiveindex"].asDouble();
   transmittanceColor = Colour(materialJson["transmittancecolor"].asArray());
+  type = GLASS;
 }
 
 double fresnelSchlick(double cosTheta, double refractiveIndex) {
