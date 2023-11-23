@@ -12,20 +12,23 @@ fps = 24
 rotation_angle = 360 / total_frames  # Total rotation divided by number of frames
 sphere_start_frame = fps  # 1 second to start moving
 float_duration = fps  # 1 second to float up
-roll_duration = fps  # 1 second to roll down
-sphere_ramp_start = [-0.4, 0.65, 1.3]  # Adjusted start position at ramp
-sphere_ramp_float_end = [0.4, 0.45, 1.3]  # Position at top of ramp
-sphere_ramp_roll_end = [0.0, -0.05, 1.0]  # End position at ramp
+ball_ramp_duration = fps  # 1 second to roll down ramp
+ball_table_roll_duration = fps * 3  # 3 seconds to roll on table
+sphere_start_location = [-0.3, 0.45, 0.8]  # Initial position of the sphere
+sphere_ramp_start = [-0.4, 0.65, 1.3]  # Position at top of ramp
+sphere_ramp_bottom = [0.4, 0.45, 1.3]  # Position at bottom of ramp
+sphere_table_roll_end = [-0.3, 0.45, 0.8]  # Sphere end roll position
 
-cylinder_start_frame = sphere_start_frame + float_duration + roll_duration
+cylinder_start_frame = sphere_start_frame + float_duration + ball_ramp_duration
 cylinder_animation_duration = fps  # 1 second for cylinder animation
+cylinder_wall_bash_duration = fps * 0.5
 cylinder_initial_position = [0.45, 0.5, 1.3]  # Initial position of the cylinder
-cylinder_end_position = [0.2, -0.5, 0.8]  # End position of the cylinder (adjust as needed)
+cylinder_wall_bash_position = [0.95, 0.4, 1.1]  # Position when cylinder bumps wall
+cylinder_end_position = [0.8, -0.5, 0.9]  # End position of the cylinder (adjust as needed)
 cylinder_rotation_axis = [1, 0, 1]  # Axis of rotation (adjust as needed)
 
 # Constants for sphere's return motion
 sphere_return_start_frame = cylinder_start_frame
-sphere_return_duration = 2 * fps  # 2 seconds for sphere's return motion
 sphere_return_end_position = [0.0, 0.45, 1.0]  # Middle of the table
 
 sphere_index = 20
@@ -54,53 +57,71 @@ def lerp(start, end, t):
 def quadratic_interpolation(start, end, t):
     return start + (end - start) * (t ** 2)
 
-def move_and_rotate_cylinder(cylinder, start_frame, current_frame, duration):
-    if start_frame <= current_frame < start_frame + duration:
-        t = (current_frame - start_frame) / duration
+def move_and_rotate_cylinder(cylinder, current_frame):
+    if current_frame < cylinder_start_frame:
+        cylinder['center'] = cylinder_initial_position
+    elif cylinder_start_frame <= current_frame < cylinder_start_frame + cylinder_wall_bash_duration:
+        t = (current_frame - cylinder_start_frame) / cylinder_wall_bash_duration
         # Quadratic translation
-        new_pos = quadratic_interpolation(np.array(cylinder_initial_position), np.array(cylinder_end_position), t)
+        new_pos = quadratic_interpolation(np.array(cylinder_initial_position), np.array(cylinder_wall_bash_position), t)
         cylinder['center'] = new_pos.tolist()
         # Rotation (adjust angle as needed)
         angle = 90 * t ** 2  # Quadratic rotation
-        cylinder['axis'] = list(rotate_point(cylinder_rotation_axis, [0, 1, 0], angle))
+        cylinder['axis'] = list(rotate_point(cylinder_rotation_axis, [0, 1, 1], angle))
+    elif current_frame < cylinder_start_frame + cylinder_wall_bash_duration + cylinder_animation_duration:
+        t = (current_frame - cylinder_start_frame - cylinder_wall_bash_duration) / cylinder_animation_duration
+        # Quadratic translation
+        new_pos = quadratic_interpolation(np.array(cylinder_wall_bash_position), np.array(cylinder_end_position), t)
+        cylinder['center'] = new_pos.tolist()
+        # Rotation (adjust angle as needed)
+        angle = 90 * t ** 2
 
-def return_motion_sphere(sphere, start_frame, current_frame, duration):
-    if start_frame <= current_frame < start_frame + duration:
-        t = (current_frame - start_frame) / duration
-        # Linear interpolation for return motion
-        new_pos = lerp(np.array(sphere_ramp_roll_end), np.array(sphere_return_end_position), t)
-        sphere['center'] = new_pos.tolist()
+def move_sphere(sphere, current_frame):
+    if  current_frame < sphere_start_frame:
+        sphere['center'] = sphere_start_location
+    elif current_frame < sphere_start_frame + float_duration:
+        t = (current_frame - sphere_start_frame) / float_duration
+        sphere['center'] = list(quadratic_interpolation(np.array(sphere_start_location), np.array(sphere_ramp_start), t))
+    elif current_frame < sphere_start_frame + float_duration + ball_ramp_duration:
+        t = (current_frame - (sphere_start_frame + float_duration)) / ball_ramp_duration
+        sphere['center'] = list(quadratic_interpolation(np.array(sphere_ramp_start), np.array(sphere_ramp_bottom), t))
+    elif current_frame < sphere_start_frame + float_duration + ball_ramp_duration + ball_table_roll_duration:
+        t = (current_frame - (sphere_start_frame + float_duration + ball_ramp_duration)) / ball_table_roll_duration
+        start = np.array(sphere_ramp_bottom)
+        end = np.array(sphere_table_roll_end)
+        x = start[0] + (end[0] - start[0]) * np.sin(t * np.pi / 2)
+        y = lerp(start[1], end[1], t)
+        z = start[2] + (end[2] - start[2]) * np.cos(t * np.pi / 2)
+        sphere['center'] = [x, y, z]
+        print(np.cos(t * np.pi / 2))
+    else:
+        sphere['center'] = sphere_table_roll_end
+
+    print(sphere['center'])
+
 
 # Animation loop
 for frame in range(total_frames):
     # Rotate camera
     camera_pos = scene['camera']['position']
     look_at = scene['camera']['lookAt']
-    scene['camera']['position'] = rotate_point(camera_pos, look_at, (30 / 360) * np.sin(rotation_angle * 4 * np.pi / 360))
+    scene['camera']['position'] = rotate_point(camera_pos, look_at, np.cos(np.radians(frame) * 1.5))
 
     # Swing light source above scene
     light = scene['scene']['lightsources'][0]
     light_pos = light['position']
-    light_swing_point = light_pos + np.array([0, 0.3, 0])
-    light['position'] = rotate_point(light_pos, light_swing_point, (30 / 360) * np.cos(rotation_angle * 6 * np.pi / 360))
+    light['position'][0] = light_pos[0] + (-0.02 * np.cos(np.radians(frame) * 3))
 
     # Sphere animation
     sphere = scene['scene']['shapes'][sphere_index]  # Assuming sphere is the 20th shape
     if sphere['type'] != 'sphere':
         raise Exception('Shape is not a sphere.')
-    if sphere_start_frame <= frame < sphere_start_frame + float_duration:
-        t = (frame - sphere_start_frame) / float_duration
-        sphere['center'] = list(quadratic_interpolation(np.array(sphere_ramp_start), np.array(sphere_ramp_float_end), t))
-    elif sphere_start_frame + float_duration <= frame < sphere_start_frame + float_duration + roll_duration:
-        t = (frame - (sphere_start_frame + float_duration)) / roll_duration
-        sphere['center'] = list(quadratic_interpolation(np.array(sphere_ramp_float_end), np.array(sphere_ramp_roll_end), t))
-    else:
-        return_motion_sphere(sphere, sphere_return_start_frame, frame, sphere_return_duration)
+    move_sphere(sphere, frame)
 
     cylinder = scene['scene']['shapes'][cylinder_index]
     if cylinder['type'] != 'cylinder':
         raise Exception('Shape is not a cylinder.')
-    move_and_rotate_cylinder(cylinder, cylinder_start_frame, frame, cylinder_animation_duration)
+    move_and_rotate_cylinder(cylinder, frame)
 
     # Write to file
     with open(f'animation2/frame_{frame:03}.json', 'w') as outfile:
