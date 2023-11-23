@@ -1,7 +1,7 @@
 ﻿// CGRaytracer.cpp : Defines the entry point for the application.
 //
 
-#include "CGRaytracer.h"
+#include "raytracer.h"
 
 #include "Image.h"
 #include "Scene.h"

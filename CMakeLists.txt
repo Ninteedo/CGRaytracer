@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : CMake project for CGRaytracer, include source and define
+﻿# CMakeList.txt : CMake project for raytracer, include source and define
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.8)
@@ -9,10 +9,10 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("CGRaytracer")
+project ("raytracer")
 
 # Add source to this project's executable.
-add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vector3D.cpp" "src/Vector3D.h" "src/Image.h" "src/Image.cpp" "src/Colour.cpp" "src/Colour.h" "src/Ray.h" "src/Ray.cpp" "src/JSONParser.h" "src/JSONParser.cpp" "test/json_parser_test.cpp"
+add_executable (raytracer "src/raytracer.cpp" "src/raytracer.h" "src/Vector3D.cpp" "src/Vector3D.h" "src/Image.h" "src/Image.cpp" "src/Colour.cpp" "src/Colour.h" "src/Ray.h" "src/Ray.cpp" "src/JSONParser.h" "src/JSONParser.cpp" "test/json_parser_test.cpp"
         src/Scene.h
         src/shapes/Shape.h
         src/lights/LightSource.h
@@ -54,15 +54,15 @@ add_executable (CGRaytracer "src/CGRaytracer.cpp" "src/CGRaytracer.h" "src/Vecto
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET CGRaytracer PROPERTY CXX_STANDARD 20)
+  set_property(TARGET raytracer PROPERTY CXX_STANDARD 20)
 endif()
 
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
-  target_link_libraries(CGRaytracer PUBLIC OpenMP::OpenMP_CXX)
+  target_link_libraries(raytracer PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-target_compile_options(CGRaytracer PRIVATE -mavx)
+target_compile_options(raytracer PRIVATE -mavx)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -ffast-math")
 
