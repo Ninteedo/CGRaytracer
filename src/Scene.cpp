@@ -525,38 +525,6 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
     throw std::runtime_error("Invalid material type: " + std::to_string(materialType));
   }
   return brdfColour;
-
-//  // Reflectivity and refraction
-//  double reflectivity = material->getIsReflective();
-//  if (material->getIsRefractive()) {
-//    // Calculate Schlick's approximation
-//    double cosTheta = std::abs(ray.direction.dot(normal));
-//    double R0 = std::pow((1 - material->getRefractiveIndex()) / (1 + material->getRefractiveIndex()), 2);
-//    reflectivity = R0 + (1 - R0) * std::pow(1 - cosTheta, 5);
-//  }
-//  reflectivity *= material->getReflectivity();
-//
-//  Colour reflectColour;
-//  if (material->getIsReflective() && reflectivity > 0) {
-//    Vector3D reflectDir = ray.direction.reflect(normal).normalize();
-//    if (material->getRoughness() > 0) {
-//      reflectDir = (reflectDir + normal.randomInHemisphere() * material->getRoughness()).normalize();
-//    }
-//    Ray reflectRay(hitPoint, reflectDir); // Avoid self-intersection
-//    auto reflectSample = samplePathtracer(reflectRay, depth + 1);
-//    reflectColour = Colour(reflectSample * reflectivity);
-//  }
-//
-//  Colour refractColour;
-//  if (material->getIsRefractive() && reflectivity < 1) {
-//    Vector3D refractDir = ray.direction.refract(normal, material->getRefractiveIndex());
-//    if (material->getRoughness() > 0) {
-//      refractDir = (refractDir + normal.randomInHemisphere() * material->getRoughness()).normalize();
-//    }
-//    Ray refractRay(hitPoint, refractDir);
-//    auto refractSample = samplePathtracer(refractRay, depth + 1);
-//    refractColour = Colour(refractSample * (1 - reflectivity));
-//  }
 }
 
 std::optional<std::pair<std::shared_ptr<Shape>, double>> Scene::checkIntersection(const Ray &ray, Interval interval) const {
@@ -619,11 +587,6 @@ void Scene::printProgress(int current, int total, std::chrono::milliseconds elap
   } else {
     std::cout << "\rRendering: " << progress << "% complete, " << elapsed.count() << "ms elapsed" << std::flush;
   }
-}
-
-void Scene::addShape(const std::shared_ptr<Shape>& shape) {
-  shapes.push_back(shape);
-  buildBspTree();
 }
 
 void Scene::buildBspTree() {
