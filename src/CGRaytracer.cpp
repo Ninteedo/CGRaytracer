@@ -13,8 +13,8 @@ namespace fs = std::filesystem;
 int main(int argc, char *argv[]) {
   // Check if the command line option for batch processing is passed
   if (argc >= 2 && string(argv[1]) == "--batch-process") {
-    string inputDir = R"(..\scenes\animation\)";
-    string outputDir = R"(..\output\animation\)";
+    string inputDir = R"(..\scenes\animation2\)";
+    string outputDir = R"(..\output\animation2\)";
 
     // Check and create output directory if it doesn't exist
     if (!fs::exists(outputDir) && !fs::create_directories(outputDir)) {
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
       cout << "Rendered " << sceneFilename << " to " << outputFilename << endl;
     }
-  } else if (argc == 3) {
+  } else if (argc >= 3) {
     // Single file processing
     string sceneFilename = argv[1];
     string outputFilename = argv[2];

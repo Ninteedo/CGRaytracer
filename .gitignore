@@ -365,4 +365,4 @@ FodyWeavers.xsd!/cmake-build-debug/
 /cmake-build-debug/
 /output/
 /cmake-build-release/
-/scenes/animation/frame_*.json
+/scenes/animation*/frame_*.json
