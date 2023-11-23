@@ -21,7 +21,7 @@
                 "type":"spherelight",
                 "position":[0, 1.0, 1],
                 "intensity":[0.5, 0.5, 0.5],
-                "radius": 0.05
+                "radius": 0.1
             }
         ],
         "shapes":[
@@ -458,7 +458,29 @@
                     "isrefractive":false,
                     "refractiveindex":1.0,
                     "texture": "../scenes/textures/PringlesSide.ppm"
-                } 
+                },
+                "topmaterial": {
+                    "ks": 0.5,
+                    "kd": 0.5,
+                    "specularexponent": 20,
+                    "diffusecolor": [0.7, 0.7, 0.8],
+                    "specularcolor": [1.0, 1.0, 1.0],
+                    "isreflective": true,
+                    "reflectivity": 0.2,
+                    "isrefractive": false,
+                    "refractiveindex": 1.0
+                },
+                "bottommaterial": {
+                    "ks": 0.5,
+                    "kd": 0.5,
+                    "specularexponent": 20,
+                    "diffusecolor": [0.7, 0.7, 0.8],
+                    "specularcolor": [1.0, 1.0, 1.0],
+                    "isreflective": true,
+                    "reflectivity": 0.2,
+                    "isrefractive": false,
+                    "refractiveindex": 1.0
+                }
             },
             {
                 "type": "triangle",
@@ -555,6 +577,65 @@
                     "isrefractive":true,
                     "refractiveindex":1.5,
                     "roughness": 0.1
+                }
+            },
+            {
+                "type": "triangle",
+                "v0": [-0.2, 0.4, 1.15],
+                "v1": [-0.1, 0.4, 1.15],
+                "v2": [-0.2, 0.55, 1.2],
+                "uv0": [0, 1],
+                "uv1": [1, 1],
+                "uv2": [0, 0],
+                "material": {
+                    "ks":0.2,
+                    "kd":0.8,
+                    "specularexponent":20,
+                    "diffusecolor":[0.1, 0.1, 0.0],
+                    "specularcolor":[1.0,1.0,1.0],
+                    "isreflective":true,
+                    "reflectivity":0.1,
+                    "isrefractive":false,
+                    "refractiveindex":1.0,
+                    "texture": "../scenes/textures/purrely.ppm"
+                }
+            },
+            {
+                "type": "triangle",
+                "v0": [-0.1, 0.4, 1.15],
+                "v1": [-0.2, 0.55, 1.2],
+                "v2": [-0.1, 0.55, 1.2],
+                "uv0": [1, 1],
+                "uv1": [0, 0],
+                "uv2": [1, 0],
+                "material": {
+                    "ks":0.2,
+                    "kd":0.8,
+                    "specularexponent":20,
+                    "diffusecolor":[0.1, 0.1, 0.0],
+                    "specularcolor":[1.0,1.0,1.0],
+                    "isreflective":true,
+                    "reflectivity":0.1,
+                    "isrefractive":false,
+                    "refractiveindex":1.0,
+                    "texture": "../scenes/textures/purrely.ppm"
+                }
+            },
+            {
+                "type": "sphere",
+                "center": [0.3, 0.47, 0.6],
+                "radius": 0.07,
+                "material": {
+                    "ks":0.7,
+                    "kd":0.3,
+                    "specularexponent":30,
+                    "diffusecolor":[0.1, 0.1, 0.0],
+                    "specularcolor":[1.0,1.0,1.0],
+                    "isreflective":true,
+                    "reflectivity":1,
+                    "isrefractive":false,
+                    "refractiveindex":0,
+                    "roughness": 0.01
                 }
             }
 

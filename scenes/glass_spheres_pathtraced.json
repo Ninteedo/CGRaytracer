@@ -37,8 +37,13 @@
                             "specularcolor":[1.0,1.0,1.0],
                             "isreflective":false,
                             "reflectivity":0.1,
-                            "isrefractive":true,
-                            "refractiveindex":1.4 
+                            "isrefractive":false,
+                            "refractiveindex":1.5,
+                            "basecolor": [0.9, 0.9, 0.9],
+                            "roughness": 0,
+                            "fresnelreflectance": 1.0,
+                            "transmittancecolor": [0.9, 0.9, 0.9],
+                            "texture": "textures/Eldlich.ppm"
                         } 
                 },
                 {
@@ -79,9 +84,9 @@
                             "refractiveindex":1.0,
                             "texture": "textures/MillenniumPuzzle.ppm"
                         },
-                    "uv0": [0, 1],
-                    "uv1": [1, 1],
-                    "uv2": [1, 0]
+                    "uv0": [0, 0],
+                    "uv1": [1, 0],
+                    "uv2": [1, 1]
                 },
                 { 
                     "type":"triangle", 
@@ -101,9 +106,9 @@
                             "refractiveindex":1.0,
                             "texture": "textures/MillenniumPuzzle.ppm"
                         } ,
-                    "uv0": [0, 0],
-                    "uv1": [0, 1],
-                    "uv2": [1, 0]
+                    "uv0": [0, 1],
+                    "uv1": [0, 0],
+                    "uv2": [1, 1]
                 }  
             ] 
         } 

@@ -23,9 +23,11 @@ cylinder_start_frame = sphere_start_frame + float_duration + ball_ramp_duration
 cylinder_animation_duration = fps  # 1 second for cylinder animation
 cylinder_wall_bash_duration = fps * 0.5
 cylinder_initial_position = [0.45, 0.5, 1.3]  # Initial position of the cylinder
+cylinder_initial_axis = np.array([0, 1, 0])  # Initial axis of rotation
 cylinder_wall_bash_position = [0.95, 0.4, 1.1]  # Position when cylinder bumps wall
+cylinder_wall_bash_axis = np.array([-0.8, 0.6, 0])  # Axis of rotation when cylinder bumps wall
 cylinder_end_position = [0.8, -0.5, 0.9]  # End position of the cylinder (adjust as needed)
-cylinder_rotation_axis = [1, 0, 1]  # Axis of rotation (adjust as needed)
+cylinder_end_axis = np.array([0.8, 0, 0.6])  # End axis of rotation (adjust as needed)
 
 # Constants for sphere's return motion
 sphere_return_start_frame = cylinder_start_frame
@@ -66,21 +68,29 @@ def move_and_rotate_cylinder(cylinder, current_frame):
         new_pos = quadratic_interpolation(np.array(cylinder_initial_position), np.array(cylinder_wall_bash_position), t)
         cylinder['center'] = new_pos.tolist()
         # Rotation (adjust angle as needed)
-        angle = 90 * t ** 2  # Quadratic rotation
-        cylinder['axis'] = list(rotate_point(cylinder_rotation_axis, [0, 1, 1], angle))
+        new_axis = lerp(np.array(cylinder_initial_axis), np.array(cylinder_wall_bash_axis), t)
+        new_axis = new_axis / np.linalg.norm(new_axis) # Normalize axis
+        cylinder['axis'] = new_axis.tolist()
     elif current_frame < cylinder_start_frame + cylinder_wall_bash_duration + cylinder_animation_duration:
         t = (current_frame - cylinder_start_frame - cylinder_wall_bash_duration) / cylinder_animation_duration
         # Quadratic translation
         new_pos = quadratic_interpolation(np.array(cylinder_wall_bash_position), np.array(cylinder_end_position), t)
         cylinder['center'] = new_pos.tolist()
         # Rotation (adjust angle as needed)
-        angle = 90 * t ** 2
+        new_axis = lerp(np.array(cylinder_wall_bash_axis), np.array(cylinder_end_axis), t).tolist()
+        new_axis = new_axis / np.linalg.norm(new_axis) # Normalize axis
+        cylinder['axis'] = new_axis.tolist()
 
 def move_sphere(sphere, current_frame):
     if  current_frame < sphere_start_frame:
         sphere['center'] = sphere_start_location
     elif current_frame < sphere_start_frame + float_duration:
         t = (current_frame - sphere_start_frame) / float_duration
+        start = np.array(sphere_start_location)
+        end = np.array(sphere_ramp_start)
+        x = start[0] + (end[0] - start[0]) * np.sin(t * np.pi / 2)
+        y = start[1] + (end[1] - start[1]) * np.sin(t * np.pi / 2)
+        z = start[2] + (end[2] - start[2]) * t ** 2
         sphere['center'] = list(quadratic_interpolation(np.array(sphere_start_location), np.array(sphere_ramp_start), t))
     elif current_frame < sphere_start_frame + float_duration + ball_ramp_duration:
         t = (current_frame - (sphere_start_frame + float_duration)) / ball_ramp_duration
@@ -89,15 +99,14 @@ def move_sphere(sphere, current_frame):
         t = (current_frame - (sphere_start_frame + float_duration + ball_ramp_duration)) / ball_table_roll_duration
         start = np.array(sphere_ramp_bottom)
         end = np.array(sphere_table_roll_end)
-        x = start[0] + (end[0] - start[0]) * np.sin(t * np.pi / 2)
+        x = start[0] + (end[0] - start[0]) * np.sin(t * np.pi / 2) ** 2
         y = lerp(start[1], end[1], t)
-        z = start[2] + (end[2] - start[2]) * np.cos(t * np.pi / 2)
+        z = start[2] + (end[2] - start[2]) * np.sin(t * np.pi / 2) ** (1/2)
         sphere['center'] = [x, y, z]
-        print(np.cos(t * np.pi / 2))
     else:
         sphere['center'] = sphere_table_roll_end
 
-    print(sphere['center'])
+    # print(sphere['center'])
 
 
 # Animation loop
