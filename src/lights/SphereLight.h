@@ -14,7 +14,7 @@ class SphereLight : public LightSource {
 
   [[nodiscard]] std::pair<Vector3D, double> getDirectionAndDistance(const Vector3D &point) const override;
 
-  int samplingFactor = 10;
+  int samplingFactor = 50;
 };
 
 #endif //CGRAYTRACER_SRC_LIGHTS_SPHERELIGHT_H_
