@@ -76,9 +76,9 @@ Image Scene::renderBinary() {
 
       Colour pixelColour;
       if (intersection.has_value()) {
-        pixelColour = intersection.value().first->getMaterial()->getDiffuseColour();
+        pixelColour = Colour(1, 0, 0);
       } else {
-        pixelColour = backgroundColour;
+        pixelColour = Colour(0, 0, 0);
       }
 
       image.setColor(x, y, pixelColour);
