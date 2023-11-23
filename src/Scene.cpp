@@ -370,6 +370,7 @@ Colour Scene::isInShadowPathtracer(const Ray &shadowRay, Colour lightIntensity, 
   if (material->getIsRefractive()) {
     // Calculate the refractive ray
     double refractiveIndex = material->getRefractiveIndex();
+    double roughness = material->getRoughness();
     Vector3D normal = hitShape->getSurfaceNormal(hitPoint);
     Vector3D refractDirection = shadowRay.direction.refract(normal, material->getRefractiveIndex());
 
@@ -396,7 +397,7 @@ Colour Scene::isInShadowPathtracer(const Ray &shadowRay, Colour lightIntensity, 
     }
     Colour refractIntensity = isInShadowPathtracer(refractRay, refractBaseIntensity, lightPosition, depth + 1);
 
-    return refractIntensity;
+    return Colour(refractIntensity * (1 - roughness / 2));
   } else {
     return Colour(0, 0, 0);
   }
