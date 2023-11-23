@@ -460,7 +460,7 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
       result += samplePathtracer(refractRay, depth + 1) * refractProb;
     }
     brdfColour = result;
-  } else {
+  } else if (materialType == MaterialType::LAMBERTIAN) {
     // Diffuse illumination
 
     // Get the diffuse factor and backgroundColour of the object
@@ -520,7 +520,9 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
       indirectIllumination += newBounceColour;
     }
     indirectIllumination = Colour(indirectIllumination * diffuseFactor * diffuseColour / nSamples);
-    brdfColour = Colour(directIllumination + indirectIllumination * diffuseFactor * diffuseColour);
+    brdfColour = Colour(directIllumination + indirectIllumination);
+  } else {
+    throw std::runtime_error("Invalid material type: " + std::to_string(materialType));
   }
   return brdfColour;
 
