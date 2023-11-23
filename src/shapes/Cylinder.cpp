@@ -15,7 +15,7 @@ Cylinder::Cylinder(JsonObject json)
     Vector3D(json["axis"].asArray()),
     json["radius"].asDouble(),
     json["height"].asDouble(),
-    Material::fromJson(json["material"].asObject()),
+    Material::fromJson(getOrDefault(json, "material", DEFAULT_MATERIAL_JSON).asObject()),
     Material::fromJson(getOrDefault(json, "topmaterial", DEFAULT_MATERIAL_JSON).asObject()),
     Material::fromJson(getOrDefault(json, "bottommaterial", DEFAULT_MATERIAL_JSON).asObject())
 ) {}

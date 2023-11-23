@@ -1,5 +1,6 @@
 #include "Triangle.h"
 #include "../Interval.h"
+#include "../materials/Lambertian.h"
 
 Triangle::Triangle(const Vector3D& v0, const Vector3D& v1, const Vector3D& v2, Material *material, const Vector2D& uv0, const Vector2D& uv1, const Vector2D& uv2)
     : v0(v0), v1(v1), v2(v2), uv0(uv0), uv1(uv1), uv2(uv2), Shape(material) {}
@@ -9,7 +10,7 @@ Triangle::Triangle(JsonObject json)
     Vector3D(json["v0"].asArray()),
     Vector3D(json["v1"].asArray()),
     Vector3D(json["v2"].asArray()),
-    Material::fromJson(json["material"].asObject()),
+    Material::fromJson(getOrDefault(json, "material", DEFAULT_MATERIAL_JSON).asObject()),
     Vector2D(getOrDefault(json, "uv0", JsonValue(JsonArray(std::vector<JsonValue>{JsonValue(0.0), JsonValue(0.0), JsonValue(0.0)}))).asArray()),
     Vector2D(getOrDefault(json, "uv1", JsonValue(JsonArray(std::vector<JsonValue>{JsonValue(0.0), JsonValue(0.0), JsonValue(0.0)}))).asArray()),
     Vector2D(getOrDefault(json, "uv2", JsonValue(JsonArray(std::vector<JsonValue>{JsonValue(0.0), JsonValue(0.0), JsonValue(0.0)}))).asArray())

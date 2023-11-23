@@ -1,4 +1,5 @@
 #include "Sphere.h"
+#include "../materials/Lambertian.h"
 #include <cmath>
 
 Sphere::Sphere(const Vector3D& centre, double radius, Material *material)
@@ -8,7 +9,7 @@ Sphere::Sphere(JsonObject json)
     : Sphere(
     Vector3D(json["center"].asArray()),
     json["radius"].asDouble(),
-    Material::fromJson(json["material"].asObject())
+    Material::fromJson(getOrDefault(json, "material", DEFAULT_MATERIAL_JSON).asObject())
 ) {}
 
 std::optional<double> Sphere::checkIntersection(Ray ray, Interval interval) const {
