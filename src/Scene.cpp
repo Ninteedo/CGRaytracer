@@ -291,7 +291,7 @@ Colour Scene::sampleBlinnPhong(const Ray &ray, int depth) {
       double ln = std::abs(lightDir.dot(normal));
       Colour id = Colour(lightIntensity * baseDiffuse);
       Colour diffuseColour = Colour(id * ln * material->getKd());
-      diffuseSpecularSum += diffuseColour * material->getKd();
+      diffuseSpecularSum += diffuseColour;
 
       // Blinn-Phong specular term
       double hn = std::abs(halfDir.dot(normal));
