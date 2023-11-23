@@ -468,7 +468,7 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
     std::optional<Vector2D> uv = std::nullopt;
     if (material->isTextured()) {
       uv = hitShape->getUVCoordinates(hitPoint).value();
-        diffuseColour = material->getTexture()->getUVColour(uv.value());
+      diffuseColour = material->getTexture()->getUVColour(uv.value());
     }
 
     // Direct illumination
@@ -486,7 +486,7 @@ Colour Scene::samplePathtracer(const Ray &ray, int depth) {
 
         if (lightIntensity.max() > 0) {
           Colour brdfContribution = hitShape->getMaterial()->evaluateBRDF(lightDirection, outgoingDirection, normal, uv);
-          directIllumination += Colour(brdfContribution * lightIntensity) / (lightSource->samplingFactor * distanceToLight * distanceToLight);
+          directIllumination += Colour(brdfContribution * lightIntensity) / (lightSource->samplingFactor);
         }
       }
     }
